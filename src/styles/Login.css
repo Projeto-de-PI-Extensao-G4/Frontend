@@ -1,0 +1,40 @@
+.login-container{
+    min-height:100vh;
+    padding:40px;
+    max-width:500px;
+    margin:auto;
+}
+
+.login-container h1{
+    text-align:center;
+    margin:20px 0 30px;
+}
+
+.login-card{
+    border:1px solid #ddd;
+    border-radius:15px;
+    padding:25px;
+}
+
+.forgot{
+    display:block;
+    text-align:right;
+    margin-bottom:20px;
+    text-decoration:none;
+    color:#666;
+}
+
+.admin-card{
+    margin-top:20px;
+    border:1px solid #ddd;
+    border-radius:15px;
+    padding:20px;
+}
+
+@media(max-width:768px){
+
+    .login-container{
+        padding:20px;
+    }
+
+}

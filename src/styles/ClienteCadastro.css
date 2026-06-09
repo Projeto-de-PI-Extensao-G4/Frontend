@@ -1,0 +1,42 @@
+.cliente-container{
+    min-height:100vh;
+}
+
+.content{
+    max-width:800px;
+    margin:auto;
+    padding:40px;
+}
+
+.content h2{
+    margin-bottom:10px;
+}
+
+.subtitle{
+    margin-bottom:30px;
+    color:#666;
+}
+
+.info-box{
+    margin-top:20px;
+    background:#f3f0f8;
+    padding:20px;
+    border-radius:10px;
+    display:flex;
+    gap:10px;
+}
+
+.actions{
+    margin-top:30px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+@media(max-width:768px){
+
+    .content{
+        padding:20px;
+    }
+
+}
