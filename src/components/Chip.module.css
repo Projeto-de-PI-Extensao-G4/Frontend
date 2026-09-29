@@ -1,0 +1,29 @@
+.linha {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 calc(-1 * var(--margem-tela));
+  padding: 2px var(--margem-tela);
+}
+
+.chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--cor-texto);
+  background: var(--cor-superficie-suave);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pilula);
+}
+
+.ativo {
+  color: var(--cor-branco);
+  background: var(--cor-preto);
+  border-color: var(--cor-preto);
+}

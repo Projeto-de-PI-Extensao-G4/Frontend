@@ -1,0 +1,29 @@
+/* Fixo na coluna do app, mesmo em tela larga. */
+.ancora {
+  position: fixed;
+  bottom: calc(var(--altura-barra-inferior) + 16px);
+  left: 50%;
+  z-index: 15;
+  width: 100%;
+  max-width: var(--largura-app);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.botao {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-left: auto;
+  margin-right: 24px;
+  background: var(--cor-preto);
+  border-radius: var(--raio-pilula);
+  box-shadow: var(--sombra-flutuante);
+}
+
+.botao:active {
+  transform: scale(0.96);
+}

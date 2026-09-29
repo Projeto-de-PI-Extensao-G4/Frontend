@@ -1,0 +1,27 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 15px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: var(--raio-pilula);
+}
+
+.escuro {
+  color: var(--cor-branco);
+  background: var(--cor-preto);
+}
+
+.contorno {
+  color: var(--cor-texto);
+  border: 1px solid var(--cor-texto);
+}
+
+.suave {
+  color: var(--cor-texto-secundario);
+  background: var(--cor-superficie-suave);
+}
