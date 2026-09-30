@@ -1,0 +1,17 @@
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Alvo de toque de 44px sem aumentar a caixa de 48px do campo. */
+.mostrar {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cor-preto);
+  text-decoration: underline;
+}
