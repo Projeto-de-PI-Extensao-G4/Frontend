@@ -1,0 +1,142 @@
+.limpar {
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #454747;
+}
+
+.datas {
+  display: flex;
+  gap: 10px;
+}
+
+.data {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+}
+
+/* Borda de 2px sem deslocar o conteúdo. */
+.dataAtiva {
+  padding: 9px 11px;
+  border: 2px solid var(--cor-preto);
+}
+
+.dataRotulo {
+  font-size: 11px;
+  font-weight: 600;
+  color: #454747;
+}
+
+.dataValor {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.mes {
+  display: flex;
+  align-items: center;
+}
+
+.mesNome {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.seta {
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.seta:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.calendario {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 4px;
+}
+
+.diaSemana {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #454747;
+}
+
+.dia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0;
+  font-size: 15px;
+  color: var(--cor-texto);
+}
+
+.dia:disabled {
+  color: var(--cor-borda);
+  cursor: not-allowed;
+}
+
+.intervalo {
+  background: var(--cor-superficie-suave);
+}
+
+.pontaEsq {
+  border-radius: 20px 0 0 20px;
+}
+
+.pontaDir {
+  border-radius: 0 20px 20px 0;
+}
+
+.pontaEsq.pontaDir {
+  border-radius: 20px;
+}
+
+.numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+}
+
+.selecionado {
+  font-weight: 700;
+  color: var(--cor-branco);
+  background: var(--cor-preto);
+}
+
+.acoes {
+  display: flex;
+  gap: 10px;
+}
+
+.acoes > button {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 16px;
+  font-size: 15px;
+  border-radius: var(--raio-cartao);
+  box-shadow: none;
+}
