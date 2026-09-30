@@ -33,6 +33,15 @@ const VENDA_INICIAL = {
   ],
 };
 
+// Ids que aparecem como CANCELADA na Lista de Vendas e nos Detalhes do Cliente: precisam abrir
+// canceladas aqui, sem pagar nem quitar.
+const IDS_CANCELADAS = new Set(['94810', '94781', '2650']);
+
+function vendaDoId(id) {
+  if (!IDS_CANCELADAS.has(id)) return VENDA_INICIAL;
+  return { ...VENDA_INICIAL, status: 'CANCELADA', motivoCancelamento: 'Cliente desistiu da compra' };
+}
+
 const moeda = (centavos) => (centavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 // Sem Date: evita o deslocamento de fuso (spec §3.1).
@@ -64,7 +73,7 @@ const ICONE_STATUS = {
 
 export default function VendaDetalhe() {
   const { id } = useParams();
-  const [venda, setVenda] = useState(VENDA_INICIAL);
+  const [venda, setVenda] = useState(() => vendaDoId(id));
   const [folha, setFolha] = useState(null); // { tipo: 'pagar' | 'quitar' | 'cancelar', parcelaId? }
 
   const parcelas = comStatusExibicao(venda.parcelas);
@@ -161,9 +170,12 @@ export default function VendaDetalhe() {
 
         <div className={styles.listaParcelas}>
           {parcelas.map((p) => {
-            const icone = ICONE_STATUS[p.statusExibicao];
+            // Venda cancelada: parcela não paga não é mais cobrada, então não mostra VENCIDA/ABERTA.
+            const encerrada = cancelada && !p.paga;
+            const status = encerrada ? 'CANCELADA' : p.statusExibicao;
+            const icone = ICONE_STATUS[encerrada ? 'AGUARDANDO' : p.statusExibicao];
             const podePagar = !p.paga && !cancelada;
-            const futura = p.statusExibicao === 'AGUARDANDO';
+            const futura = p.statusExibicao === 'AGUARDANDO' || encerrada;
             return (
               <article key={p.id} className={`${styles.parcela} ${futura ? styles.parcelaFutura : ''}`}>
                 <div className={styles.parcelaTopo}>
@@ -180,7 +192,7 @@ export default function VendaDetalhe() {
                   </div>
                   <div className={styles.parcelaValor}>
                     <strong>{moeda(p.valor)}</strong>
-                    <BadgeStatus status={p.statusExibicao} />
+                    <BadgeStatus status={status} />
                   </div>
                 </div>
                 {podePagar && (
