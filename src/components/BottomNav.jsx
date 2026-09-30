@@ -25,7 +25,8 @@ export default function BottomNav() {
             {/* O SVG vira máscara: a cor segue o texto, e a aba ativa fica preta. */}
             <span
               className={styles.icone}
-              style={{ width: largura, height: altura, maskImage: `url(${src})`, WebkitMaskImage: `url(${src})` }}
+              // Aspas obrigatórias: o Vite embute SVG pequeno como data URI, com espaços e aspas simples.
+              style={{ width: largura, height: altura, maskImage: `url("${src}")`, WebkitMaskImage: `url("${src}")` }}
               aria-hidden="true"
             />
             <span className={styles.rotulo}>{rotulo}</span>
