@@ -4,6 +4,7 @@ import AppLayout from '../../components/AppLayout';
 import Botao from '../../components/Botao';
 import { BadgeStatus } from '../../components/Badge';
 import FolhaInferior from '../../components/FolhaInferior';
+import { enviarComprovantePdf } from '../../components/comprovante/gerarComprovantePdf';
 import calendarioPequeno from '../../assets/icons/calendario-pequeno.svg';
 import parcelaPaga from '../../assets/icons/parcela-paga.svg';
 import parcelaAberta from '../../assets/icons/parcela-aberta.svg';
@@ -23,8 +24,13 @@ const VENDA_INICIAL = {
   valorTotal: 125000,
   status: 'PENDENTE',
   motivoCancelamento: null,
+  itens: [
+    { produtoNome: 'Jogo de Cama Casal 200 fios', quantidade: 2, preco: 38990 },
+    { produtoNome: 'Toalha de Banho Algodão', quantidade: 3, preco: 8990 },
+    { produtoNome: 'Toalha de Mesa Linho', quantidade: 1, preco: 20050 },
+  ],
   parcelas: [
-    { id: 1, numero: 1, valor: 31250, vencimento: '2023-11-12', paga: true, forma: 'PIX' },
+    { id: 1, numero: 1, valor: 31250, vencimento: '2023-11-12', paga: true, forma: 'PIX', pagaEm: '2023-11-10' },
     { id: 2, numero: 2, valor: 31250, vencimento: '2023-12-12', paga: false, forma: null },
     { id: 3, numero: 3, valor: 31250, vencimento: '2024-01-12', paga: false, forma: null },
     { id: 4, numero: 4, valor: 31250, vencimento: '2024-02-12', paga: false, forma: null },
@@ -38,6 +44,44 @@ const IDS_CANCELADAS = new Set(['94810', '94781', '2650']);
 function vendaDoId(id) {
   if (!IDS_CANCELADAS.has(id)) return VENDA_INICIAL;
   return { ...VENDA_INICIAL, status: 'CANCELADA', motivoCancelamento: 'Cliente desistiu da compra' };
+}
+
+const FORMA_API = {
+  Dinheiro: 'DINHEIRO',
+  'Cartão de crédito': 'CARTAO_CREDITO',
+  'Cartão de débito': 'CARTAO_DEBITO',
+  PIX: 'PIX',
+  Boleto: 'BOLETO',
+  Cheque: 'CHEQUE',
+};
+
+// Converte o mock (centavos, nomes de tela) para o formato de GET /vendas/{id}, que é o que o
+// PDF recebe. Ligado à API, esta função some: a resposta já vem assim.
+function paraFormatoApi(id, venda, parcelas, saldo) {
+  return {
+    id,
+    clienteNome: venda.clienteNome,
+    dataVenda: venda.dataVenda,
+    statusVendaSituacao: venda.status,
+    motivoCancelamento: venda.motivoCancelamento,
+    valorTotal: venda.valorTotal / 100,
+    valorPago: (venda.valorTotal - saldo) / 100,
+    valorRestante: saldo / 100,
+    itens: venda.itens.map((i) => ({
+      produtoNome: i.produtoNome,
+      quantidade: i.quantidade,
+      precoUnitario: i.preco / 100,
+      subtotal: (i.preco * i.quantidade) / 100,
+    })),
+    parcelas: parcelas.map((p) => ({
+      numeroParcela: p.numero,
+      dataVencimento: p.vencimento,
+      valorParcela: p.valor / 100,
+      statusExibicao: p.statusExibicao,
+      dataPagamento: p.paga ? p.pagaEm : null,
+      formaPagamentoNome: p.paga ? (FORMA_API[p.forma] ?? p.forma) : null,
+    })),
+  };
 }
 
 const moeda = (centavos) => (centavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -78,8 +122,9 @@ const ICONE_STATUS = {
 export default function VendaDetalhe() {
   const { id } = useParams();
   const [venda, setVenda] = useState(() => vendaDoId(id));
-  const [folha, setFolha] = useState(null);
-  const [copiado, setCopiado] = useState(false); // { tipo: 'pagar' | 'quitar' | 'cancelar', parcelaId? }
+  const [folha, setFolha] = useState(null); // { tipo: 'pagar' | 'quitar' | 'cancelar' | 'comprovante', parcelaId? }
+  const [copiado, setCopiado] = useState(false);
+  const [gerandoPdf, setGerandoPdf] = useState(false);
 
   const parcelas = comStatusExibicao(venda.parcelas);
   const pagas = parcelas.filter((p) => p.paga).length;
@@ -89,7 +134,7 @@ export default function VendaDetalhe() {
 
   const pagarParcela = (parcelaId, forma) => {
     setVenda((v) => {
-      const parcelasNovas = v.parcelas.map((p) => (p.id === parcelaId ? { ...p, paga: true, forma } : p));
+      const parcelasNovas = v.parcelas.map((p) => (p.id === parcelaId ? { ...p, paga: true, forma, pagaEm: HOJE } : p));
       return { ...v, parcelas: parcelasNovas, status: parcelasNovas.every((p) => p.paga) ? 'PAGA' : v.status };
     });
     fecharFolha();
@@ -99,7 +144,7 @@ export default function VendaDetalhe() {
     setVenda((v) => ({
       ...v,
       status: 'PAGA',
-      parcelas: v.parcelas.map((p) => (p.paga ? p : { ...p, paga: true, forma })),
+      parcelas: v.parcelas.map((p) => (p.paga ? p : { ...p, paga: true, forma, pagaEm: HOJE })),
     }));
     fecharFolha();
   };
@@ -118,6 +163,9 @@ export default function VendaDetalhe() {
     `Pago: ${moeda(venda.valorTotal - saldo)}`,
     `Restante: ${moeda(cancelada ? 0 : saldo)}`,
     '',
+    'Itens:',
+    ...venda.itens.map((i) => `- ${i.quantidade}x ${i.produtoNome} — ${moeda(i.preco * i.quantidade)}`),
+    '',
     'Parcelas:',
     ...parcelas.map((p) => `- ${p.numero}) ${moeda(p.valor)} venc. ${dataCurta(p.vencimento)} [${p.statusExibicao}]`),
   ].join('\n');
@@ -128,6 +176,15 @@ export default function VendaDetalhe() {
       navigator.share({ text: textoComprovante }).catch(() => {});
     } else {
       window.open(`https://wa.me/?text=${encodeURIComponent(textoComprovante)}`, '_blank', 'noopener');
+    }
+  };
+
+  const enviarPdf = async () => {
+    setGerandoPdf(true);
+    try {
+      await enviarComprovantePdf(paraFormatoApi(id, venda, parcelas, saldo));
+    } finally {
+      setGerandoPdf(false);
     }
   };
 
@@ -252,12 +309,19 @@ export default function VendaDetalhe() {
         </section>
       )}
 
-
       <FolhaInferior aberta={folha?.tipo === 'comprovante'} onFechar={fecharFolha} titulo="Comprovante da venda">
-        <p className="texto-apoio">É esta a mensagem que o cliente recebe:</p>
+        <p className="texto-apoio">
+          O cliente recebe o comprovante em PDF, pelo WhatsApp ou outro app. Se preferir, envie só o texto
+          abaixo.
+        </p>
+        <Botao onClick={enviarPdf} disabled={gerandoPdf}>
+          {gerandoPdf ? 'Gerando PDF…' : 'Enviar PDF'}
+        </Botao>
         <pre className={styles.previa}>{textoComprovante}</pre>
-        <Botao onClick={enviarComprovante}>Enviar (WhatsApp ou outro app)</Botao>
-        <Botao variante="secundario" onClick={copiarComprovante}>
+        <Botao variante="secundario" onClick={enviarComprovante}>
+          Enviar como texto
+        </Botao>
+        <Botao variante="texto" onClick={copiarComprovante}>
           {copiado ? 'Texto copiado ✓' : 'Copiar texto'}
         </Botao>
       </FolhaInferior>
