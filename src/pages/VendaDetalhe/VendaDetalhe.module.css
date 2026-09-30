@@ -1,0 +1,381 @@
+.botaoHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -13px;
+  border-radius: var(--raio-pilula);
+}
+
+.identidade {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.linhaIdentidade {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.blocoDireita {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.rotuloMaiusculo {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--cor-texto-secundario);
+}
+
+.destaque {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--cor-preto);
+  overflow-wrap: anywhere;
+}
+
+.dataVenda {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cor-texto-secundario);
+}
+
+.cancelamento {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cor-texto-secundario);
+}
+
+.estatisticas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.estatistica {
+  display: flex;
+  flex-direction: column;
+  gap: 4.5px;
+  padding: 17px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+}
+
+.estatisticaRotulo {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  color: var(--cor-texto-secundario);
+}
+
+.estatisticaValor {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--cor-preto);
+}
+
+.saldo {
+  color: var(--cor-perigo);
+}
+
+.parcelas {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cabecalhoParcelas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tituloParcelas {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--cor-preto);
+}
+
+.listaParcelas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.parcela {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 17px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+}
+
+.parcelaFutura {
+  opacity: 0.75;
+}
+
+.parcelaTopo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.parcelaInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--raio-pilula);
+}
+
+.iconePaga {
+  background: #f0fdf4;
+}
+
+.iconeAberta {
+  background: var(--cor-avatar);
+}
+
+.iconeVencida {
+  background: #ffdad6;
+}
+
+.iconeAguardando {
+  background: var(--cor-trilho);
+}
+
+.parcelaNome {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--cor-preto);
+  white-space: nowrap;
+}
+
+.parcelaVencimento {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cor-texto-secundario);
+}
+
+.parcelaValor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  gap: 2px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--cor-preto);
+  white-space: nowrap;
+}
+
+.registrar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  color: var(--cor-branco);
+  background: var(--cor-preto);
+  border-radius: var(--raio-campo);
+}
+
+.registrarSuave {
+  color: var(--cor-texto-secundario);
+  background: #f3f3f4;
+  border: 1px solid var(--cor-borda);
+}
+
+.acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cancelar {
+  width: 100%;
+  min-height: 48px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cor-perigo);
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-perigo);
+  border-radius: var(--raio-cartao);
+}
+
+.comprovante {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 24px;
+  overflow: hidden;
+  color: var(--cor-branco);
+  background: var(--cor-preto);
+  border-radius: 16px;
+}
+
+.comprovante::after {
+  content: '';
+  position: absolute;
+  right: -40px;
+  bottom: -40px;
+  width: 160px;
+  height: 160px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--raio-pilula);
+  filter: blur(32px);
+  pointer-events: none;
+}
+
+.comprovanteTitulo {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.comprovanteTexto {
+  padding-bottom: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  opacity: 0.8;
+}
+
+.compartilhar {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  color: var(--cor-preto);
+  background: var(--cor-branco);
+  border-radius: var(--raio-campo);
+}
+
+.formas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.forma {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--altura-campo);
+  padding: 0 16px;
+  font-size: 16px;
+  text-align: left;
+  color: var(--cor-texto);
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+}
+
+.formaAtiva {
+  font-weight: 700;
+  border-color: var(--cor-preto);
+  box-shadow: 0 0 0 1px var(--cor-preto);
+}
+
+.motivo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.motivoRotulo {
+  font-size: 14px;
+  color: var(--cor-texto-secundario);
+}
+
+.motivoCampo {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  color: var(--cor-texto);
+  resize: none;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+  outline: none;
+}
+
+.motivoCampo:focus {
+  border-color: var(--cor-preto);
+  box-shadow: 0 0 0 1px var(--cor-preto);
+}
+
+.motivoErro {
+  border-color: var(--cor-perigo);
+}
+
+.motivoRodape {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.motivoMensagem {
+  font-size: 12px;
+  color: var(--cor-perigo);
+}
+
+.confirmarCancelamento.confirmarCancelamento {
+  background: var(--cor-perigo);
+}
