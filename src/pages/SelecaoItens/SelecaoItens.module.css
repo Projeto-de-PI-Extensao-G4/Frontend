@@ -1,0 +1,140 @@
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cartao {
+  display: flex;
+  gap: 16px;
+  padding: 13px;
+}
+
+.foto {
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  overflow: hidden;
+  background: #e8e8e8;
+  border-radius: var(--raio-campo);
+}
+
+.foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.nome {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cor-texto);
+}
+
+.linhaPreco {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.preco {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cor-preto);
+}
+
+.contador {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  background: var(--cor-trilho);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+}
+
+.botaoContador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--raio-campo);
+}
+
+.botaoContador:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.botaoContador:not(:disabled):active {
+  background: var(--cor-borda);
+}
+
+.qtd {
+  width: 32px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  color: var(--cor-texto);
+}
+
+/* Fixo na coluna do app, logo acima da barra inferior. */
+.rodape {
+  position: fixed;
+  bottom: var(--altura-barra-inferior);
+  left: 50%;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  max-width: var(--largura-app);
+  padding: 16px;
+  background: #e2e2e2;
+  border-top: 1px solid var(--cor-borda);
+  box-shadow: var(--sombra-folha);
+  transform: translateX(-50%);
+}
+
+.rodapeQtd {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cor-texto-secundario);
+}
+
+.rodapeTotal {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--cor-preto);
+}
+
+.confirmar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 32px;
+  font-size: 16px;
+  color: var(--cor-branco);
+  background: var(--cor-preto);
+  border-radius: var(--raio-campo);
+}
+
+.confirmar:active {
+  opacity: 0.85;
+}
