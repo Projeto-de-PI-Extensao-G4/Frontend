@@ -1,23 +1,24 @@
 import styles from './Badge.module.css';
 
-// variante: 'escuro' | 'contorno' | 'suave'. Os status da API mapeiam assim:
-// PAGA/PAGO → escuro, PENDENTE/ABERTA/AGUARDANDO → contorno, CANCELADA → suave.
-export default function Badge({ variante = 'contorno', children }) {
+// Variantes com as cores do Figma (wireframe):
+// positivo (verde), alerta (amarelo), perigo (vermelho), neutro (cinza) — etiqueta de canto 4px;
+// contorno e apagado — pílula com borda, usada no status do produto.
+export default function Badge({ variante = 'neutro', children }) {
   return <span className={`${styles.badge} ${styles[variante]}`}>{children}</span>;
 }
 
 const VARIANTE_POR_STATUS = {
-  PAGA: 'escuro',
-  PAGO: 'escuro',
-  PENDENTE: 'contorno',
-  ABERTA: 'contorno',
-  AGUARDANDO: 'contorno',
-  VENCIDA: 'escuro',
-  CANCELADA: 'suave',
-  ATIVO: 'escuro',
-  INATIVO: 'suave',
+  PAGA: 'positivo',
+  PAGO: 'positivo',
+  PENDENTE: 'alerta',
+  CANCELADA: 'perigo',
+  VENCIDA: 'perigo',
+  ABERTA: 'neutro',
+  AGUARDANDO: 'neutro',
+  ATIVO: 'contorno',
+  INATIVO: 'apagado',
 };
 
 export function BadgeStatus({ status }) {
-  return <Badge variante={VARIANTE_POR_STATUS[status] ?? 'contorno'}>{status}</Badge>;
+  return <Badge variante={VARIANTE_POR_STATUS[status] ?? 'neutro'}>{status}</Badge>;
 }

@@ -14,7 +14,16 @@
 
   --cor-borda: #c4c7c7;
   --cor-positivo: #16a34a;
-  --cor-perigo: #dc2626;
+  --cor-perigo: #ba1a1a;
+
+  --cor-badge-positivo-texto: #15803d;
+  --cor-badge-positivo-fundo: #dcfce7;
+  --cor-badge-alerta-texto: #a16207;
+  --cor-badge-alerta-fundo: #fef9c3;
+  --cor-badge-perigo-texto: #93000a;
+  --cor-badge-perigo-fundo: #ffdad6;
+  --cor-badge-neutro-fundo: #e8e8e8;
+  --cor-badge-apagado-fundo: #e2e2e2;
 
   --fonte: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
