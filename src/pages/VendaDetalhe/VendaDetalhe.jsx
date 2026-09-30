@@ -10,8 +10,6 @@ import parcelaAberta from '../../assets/icons/parcela-aberta.svg';
 import parcelaAguardando from '../../assets/icons/parcela-aguardando.svg';
 import registrarPagamento from '../../assets/icons/registrar-pagamento.svg';
 import registrarPagamentoInativo from '../../assets/icons/registrar-pagamento-inativo.svg';
-import baixar from '../../assets/icons/baixar.svg';
-import compartilharHeader from '../../assets/icons/compartilhar-header.svg';
 import styles from './VendaDetalhe.module.css';
 
 const HOJE = '2023-12-20';
@@ -45,6 +43,12 @@ function vendaDoId(id) {
 const moeda = (centavos) => (centavos / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
 // Sem Date: evita o deslocamento de fuso (spec §3.1).
+// dd/mm/aaaa, o formato do texto do comprovante.
+function dataCurta(iso) {
+  const [ano, mes, dia] = iso.slice(0, 10).split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
 function formatarData(iso) {
   const [ano, mes, dia] = iso.slice(0, 10).split('-');
   return `${dia} ${MESES[Number(mes) - 1]}, ${ano}`;
@@ -74,7 +78,8 @@ const ICONE_STATUS = {
 export default function VendaDetalhe() {
   const { id } = useParams();
   const [venda, setVenda] = useState(() => vendaDoId(id));
-  const [folha, setFolha] = useState(null); // { tipo: 'pagar' | 'quitar' | 'cancelar', parcelaId? }
+  const [folha, setFolha] = useState(null);
+  const [copiado, setCopiado] = useState(false); // { tipo: 'pagar' | 'quitar' | 'cancelar', parcelaId? }
 
   const parcelas = comStatusExibicao(venda.parcelas);
   const pagas = parcelas.filter((p) => p.paga).length;
@@ -104,28 +109,36 @@ export default function VendaDetalhe() {
     fecharFolha();
   };
 
-  const compartilhar = () => {
-    const texto =
-      `Comprovante de venda #${id}\nCliente: ${venda.clienteNome}\n` +
-      `Total: ${moeda(venda.valorTotal)}\nParcelas pagas: ${pagas}/${parcelas.length}\n` +
-      `Saldo devedor: ${moeda(saldo)}`;
+  // Mesmo formato do textoCompartilhamento de GET /vendas/{id}/comprovante, que substitui este mock.
+  const textoComprovante = [
+    `Cris Utilidades — Comprovante da venda #${id}`,
+    `Cliente: ${venda.clienteNome}`,
+    `Data: ${dataCurta(venda.dataVenda)}`,
+    `Total: ${moeda(venda.valorTotal)}`,
+    `Pago: ${moeda(venda.valorTotal - saldo)}`,
+    `Restante: ${moeda(cancelada ? 0 : saldo)}`,
+    '',
+    'Parcelas:',
+    ...parcelas.map((p) => `- ${p.numero}) ${moeda(p.valor)} venc. ${dataCurta(p.vencimento)} [${p.statusExibicao}]`),
+  ].join('\n');
+
+  // Compartilhamento nativo do celular (WhatsApp, e-mail...); no computador, abre o WhatsApp Web.
+  const enviarComprovante = () => {
     if (navigator.share) {
-      navigator.share({ text: texto }).catch(() => {});
+      navigator.share({ text: textoComprovante }).catch(() => {});
     } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank', 'noopener');
+      window.open(`https://wa.me/?text=${encodeURIComponent(textoComprovante)}`, '_blank', 'noopener');
     }
   };
 
-  const botaoCompartilhar = (
-    <button type="button" className={styles.botaoHeader} aria-label="Compartilhar" onClick={compartilhar}>
-      <img src={compartilharHeader} width={18} height={20} alt="" />
-    </button>
-  );
+  const copiarComprovante = () => {
+    navigator.clipboard?.writeText(textoComprovante).then(() => setCopiado(true));
+  };
 
   const parcelaDaFolha = folha?.tipo === 'pagar' ? parcelas.find((p) => p.id === folha.parcelaId) : null;
 
   return (
-    <AppLayout cabecalho={{ titulo: `Venda #${id}`, esquerda: 'voltar', direita: botaoCompartilhar }}>
+    <AppLayout cabecalho={{ titulo: `Venda #${id}`, esquerda: 'voltar' }}>
       <section className={styles.identidade}>
         <div className={styles.linhaIdentidade}>
           <div className={styles.bloco}>
@@ -216,6 +229,16 @@ export default function VendaDetalhe() {
         </div>
       </section>
 
+      <Botao
+        variante="secundario"
+        onClick={() => {
+          setCopiado(false);
+          setFolha({ tipo: 'comprovante' });
+        }}
+      >
+        Enviar comprovante ao cliente
+      </Botao>
+
       {!cancelada && (
         <section className={styles.acoes}>
           {saldo > 0 && (
@@ -229,16 +252,15 @@ export default function VendaDetalhe() {
         </section>
       )}
 
-      <section className={styles.comprovante}>
-        <h3 className={styles.comprovanteTitulo}>Comprovante de Venda</h3>
-        <p className={styles.comprovanteTexto}>
-          Monte o comprovante da venda e compartilhe pelo WhatsApp ou outro app.
-        </p>
-        <button type="button" className={styles.compartilhar} onClick={compartilhar}>
-          <img src={baixar} width={12} height={12} alt="" />
-          Compartilhar
-        </button>
-      </section>
+
+      <FolhaInferior aberta={folha?.tipo === 'comprovante'} onFechar={fecharFolha} titulo="Comprovante da venda">
+        <p className="texto-apoio">É esta a mensagem que o cliente recebe:</p>
+        <pre className={styles.previa}>{textoComprovante}</pre>
+        <Botao onClick={enviarComprovante}>Enviar (WhatsApp ou outro app)</Botao>
+        <Botao variante="secundario" onClick={copiarComprovante}>
+          {copiado ? 'Texto copiado ✓' : 'Copiar texto'}
+        </Botao>
+      </FolhaInferior>
 
       <FolhaInferior
         aberta={folha?.tipo === 'pagar' || folha?.tipo === 'quitar'}
