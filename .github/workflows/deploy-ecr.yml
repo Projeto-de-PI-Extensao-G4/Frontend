@@ -1,0 +1,91 @@
+name: Buildar e dar o push do Frontend no ECR
+
+on:
+  workflow_dispatch:
+    inputs:
+      aws_access_key_id:
+        description: "AWS Access Key ID"
+        required: true
+        type: string
+
+      aws_secret_access_key:
+        description: "AWS Secret Access Key"
+        required: true
+        type: string
+
+      aws_session_token:
+        description: "AWS Session Token"
+        required: true
+        type: string
+
+      aws_account_id:
+        description: "AWS Account ID"
+        required: true
+        type: string
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      ECR_REPOSITORY: "cris-utilidades-frontend"
+
+    steps:
+
+      # Baixa o código do repositório
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Configura o Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Instala as dependências do projeto
+      - name: Install dependencies
+        run: npm ci
+
+      # Gera a pasta dist do React
+      - name: Build React
+        run: npm run build
+
+      # Oculta as credenciais nos logs do Actions
+      - name: Mask AWS credentials
+        run: |
+          echo "::add-mask::${{ inputs.aws_access_key_id }}"
+          echo "::add-mask::${{ inputs.aws_secret_access_key }}"
+          echo "::add-mask::${{ inputs.aws_session_token }}"
+
+      # Configura as credenciais temporárias da AWS
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ inputs.aws_access_key_id }}
+          aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
+          aws-session-token: ${{ inputs.aws_session_token }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Faz login do Docker no Amazon ECR
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Cria a imagem Docker do frontend
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REPOSITORY:latest .
+
+      # Adiciona a tag do repositório ECR
+      - name: Tag Docker image
+        run: |
+          docker tag \
+            $ECR_REPOSITORY:latest \
+            ${{ inputs.aws_account_id }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+
+      # Envia a imagem para o ECR
+      - name: Push image to ECR
+        run: |
+          docker push \
+            ${{ inputs.aws_account_id }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
