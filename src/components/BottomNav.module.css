@@ -1,0 +1,60 @@
+.barra {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: var(--largura-app);
+  height: var(--altura-barra-inferior);
+  padding: 0 10px env(safe-area-inset-bottom);
+  background: var(--cor-fundo);
+  border-top: 1px solid var(--cor-borda);
+}
+
+.aba {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 44px;
+  min-height: 44px;
+  color: var(--cor-texto-secundario);
+}
+
+.ativa {
+  color: var(--cor-preto);
+}
+
+.icone {
+  display: block;
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+}
+
+.rotulo {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
+/* Abaixo de 380px os seis rótulos não cabem com o espaçamento do Figma. */
+@media (max-width: 379px) {
+  .barra {
+    padding: 0 4px;
+  }
+
+  .rotulo {
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+}

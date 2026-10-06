@@ -1,0 +1,266 @@
+.filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.periodo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.periodoRotulo {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  color: #454747;
+}
+
+.datas {
+  display: flex;
+  gap: 10px;
+}
+
+.data {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+}
+
+.data:focus-within {
+  border-color: var(--cor-preto);
+  box-shadow: 0 0 0 1px var(--cor-preto);
+}
+
+.data img {
+  flex-shrink: 0;
+}
+
+.dataTexto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.dataRotulo {
+  font-size: 11px;
+  font-weight: 600;
+  color: #454747;
+}
+
+.dataValor {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+/* Input nativo por cima do rótulo: abre o seletor de data do aparelho. */
+.dataInput {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+}
+
+.resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px;
+  color: var(--cor-branco);
+  background: var(--cor-preto);
+  border-radius: 16px;
+}
+
+.resumoRotulo {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  opacity: 0.7;
+}
+
+.resumoTotal {
+  font-size: 30px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.resumoPeriodo {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.grupoTitulo {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--cor-texto-secundario);
+  opacity: 0.7;
+}
+
+.linha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 74px;
+  padding: 16px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: 12px;
+}
+
+.linha:active {
+  background: var(--cor-superficie-suave);
+}
+
+.linhaIcone {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--cor-trilho);
+  border-radius: var(--raio-pilula);
+}
+
+.linhaInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.linhaCliente {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linhaDetalhe {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cor-texto-secundario);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.linhaValor {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.linhaPreco {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+.selo {
+  padding: 0 8px;
+  font-size: 10px;
+  line-height: 15px;
+  text-transform: uppercase;
+  color: var(--cor-texto-secundario);
+  background: var(--cor-trilho);
+  border-radius: 4px;
+}
+
+.vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 24px;
+  text-align: center;
+  background: var(--cor-superficie-suave);
+  border-radius: 16px;
+}
+
+.vazioIcone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: var(--cor-superficie);
+  border-radius: 28px;
+}
+
+.vazioTitulo {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.vazioTexto {
+  font-size: 14px;
+  color: #454747;
+}
+
+.vazioBotao {
+  min-height: 48px;
+  margin-top: 4px;
+  padding: 0 20px;
+  font-size: 15px;
+  box-shadow: none;
+}
+
+.opcoes {
+  display: flex;
+  flex-direction: column;
+}
+
+.opcao {
+  min-height: 52px;
+  padding: 0 4px;
+  font-size: 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--cor-superficie-suave);
+}
+
+.opcaoAtiva {
+  font-weight: 700;
+}
+
+.opcaoAtiva::after {
+  content: ' ✓';
+}
+
+.faixa {
+  display: flex;
+  gap: 12px;
+}

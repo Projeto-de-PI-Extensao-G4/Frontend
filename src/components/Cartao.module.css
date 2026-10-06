@@ -1,0 +1,14 @@
+.cartao {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+}
+
+button.cartao:active,
+a.cartao:active {
+  background: var(--cor-superficie-suave);
+}

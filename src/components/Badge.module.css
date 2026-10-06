@@ -1,0 +1,47 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border-radius: 4px;
+}
+
+.positivo {
+  color: var(--cor-badge-positivo-texto);
+  background: var(--cor-badge-positivo-fundo);
+}
+
+.alerta {
+  color: var(--cor-badge-alerta-texto);
+  background: var(--cor-badge-alerta-fundo);
+}
+
+.perigo {
+  color: var(--cor-badge-perigo-texto);
+  background: var(--cor-badge-perigo-fundo);
+}
+
+.neutro {
+  color: var(--cor-texto-secundario);
+  background: var(--cor-badge-neutro-fundo);
+}
+
+.contorno,
+.apagado {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pilula);
+}
+
+.contorno {
+  color: var(--cor-preto);
+}
+
+.apagado {
+  color: var(--cor-texto-secundario);
+  background: var(--cor-badge-apagado-fundo);
+}

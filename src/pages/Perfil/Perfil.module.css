@@ -1,0 +1,169 @@
+.cabecalho {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--cor-texto);
+  background: var(--cor-avatar);
+  border: 2px solid var(--cor-borda);
+  border-radius: var(--raio-pilula);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.identidade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 100%;
+  text-align: center;
+}
+
+.nome {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.email {
+  max-width: 100%;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cor-texto-secundario);
+  overflow-wrap: anywhere;
+}
+
+.secao {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.titulo {
+  padding-left: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  color: var(--cor-texto-secundario);
+}
+
+.lista {
+  overflow: hidden;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 16px;
+  text-align: left;
+}
+
+.item + .item {
+  border-top: 1px solid var(--cor-borda);
+}
+
+button.item:active,
+a.item:active {
+  background: var(--cor-superficie-suave);
+}
+
+.itemAgenda {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.itemEsquerda {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.icone {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+}
+
+.itemTexto {
+  display: block;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.itemApoio {
+  display: block;
+  font-size: 13px;
+  line-height: 24px;
+  color: #454747;
+}
+
+.sair {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 16px;
+}
+
+.botaoSair {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 56px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cor-perigo);
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-perigo);
+  border-radius: var(--raio-cartao);
+}
+
+.versao {
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--cor-borda);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--altura-barra-inferior) + 16px);
+  z-index: 60;
+  width: calc(100% - 2 * var(--margem-tela));
+  max-width: calc(var(--largura-app) - 2 * var(--margem-tela));
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cor-branco);
+  background: var(--cor-texto);
+  border-radius: 12px;
+  transform: translateX(-50%);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}

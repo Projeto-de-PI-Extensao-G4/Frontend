@@ -1,0 +1,20 @@
+.app {
+  position: relative;
+  width: 100%;
+  max-width: var(--largura-app);
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--cor-fundo);
+}
+
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px var(--margem-tela) 32px;
+}
+
+/* Espaço para a barra inferior e para o botão flutuante não cobrirem o fim da lista. */
+.comBarra {
+  padding-bottom: calc(var(--altura-barra-inferior) + 96px);
+}
