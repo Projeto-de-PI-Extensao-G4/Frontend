@@ -1,0 +1,62 @@
+.grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.rotulo {
+  font-size: 14px;
+  color: var(--cor-texto-secundario);
+}
+
+.caixa {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--altura-campo);
+  padding: 0 16px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+}
+
+.caixa:focus-within {
+  border-color: var(--cor-preto);
+  box-shadow: 0 0 0 1px var(--cor-preto);
+}
+
+.comErro {
+  border-color: var(--cor-perigo);
+}
+
+/* Vale para <input> e <select> passados como filhos. */
+.input,
+.caixa > input,
+.caixa > select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  color: var(--cor-texto);
+  outline: none;
+  appearance: none;
+}
+
+.input::placeholder,
+.caixa > input::placeholder {
+  color: var(--cor-texto-apagado);
+}
+
+.seta {
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.erro {
+  font-size: 13px;
+  color: var(--cor-perigo);
+}

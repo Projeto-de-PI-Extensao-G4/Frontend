@@ -1,0 +1,169 @@
+.filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.resumo {
+  display: grid;
+  gap: 16px;
+}
+
+.cartaoResumo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 17px;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+}
+
+.resumoRotulo {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  color: var(--cor-texto-secundario);
+}
+
+.resumoValor {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--cor-texto);
+}
+
+.resumoDetalhe {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  color: var(--cor-texto-secundario);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cabecalhoLista {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.tituloLista {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.vazio {
+  padding: 24px 0;
+  text-align: center;
+}
+
+.venda {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 17px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+}
+
+.venda:active {
+  background: var(--cor-superficie-suave);
+}
+
+.vendaTopo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vendaInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cliente {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  overflow-wrap: anywhere;
+}
+
+.data {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cor-texto-secundario);
+}
+
+.vendaValor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.valor {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+.vendaRodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 13px;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.verDetalhes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.6px;
+  color: var(--cor-preto);
+}
+
+.carregarMais {
+  display: flex;
+  justify-content: center;
+  padding-top: 8px;
+}
+
+.botaoMais {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 25px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cor-texto);
+  background: #e8e8e8;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+}

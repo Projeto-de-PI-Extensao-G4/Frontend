@@ -1,49 +1,50 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Login from "./Login";
-import ClienteCadastro from "./ClienteCadastro";
-import ClienteDetalhe from "./ClienteDetalhe";
-import ClienteEdicao from "./ClienteEdicao";
-import Clientes from "./Clientes";
-import PainelVendas from "./PainelVendas";
-import Produtos from "./Produtos";
-import ListaVendas from "./ListaVendas";
-import NovaVenda from "./NovaVenda";
-import ParcelamentoVenda from "./ParcelamentoVenda";
-import PerfilAjustes from "./PerfilAjustes";
-import Pagamentos from "./Pagamentos";
-import NovoProduto from "./NovoProduto";
-import ProdutosDestaque from "./ProdutosDestaque";
 
-function App() {
+import Login from './pages/Login/Login';
+import Painel from './pages/Painel/Painel';
+import Clientes from './pages/Clientes/Clientes';
+import ClienteForm from './pages/ClienteForm/ClienteForm';
+import ClienteDetalhe from './pages/ClienteDetalhe/ClienteDetalhe';
+import Produtos from './pages/Produtos/Produtos';
+import ProdutoForm from './pages/ProdutoForm/ProdutoForm';
+import Vendas from './pages/Vendas/Vendas';
+import RegistrarVenda from './pages/RegistrarVenda/RegistrarVenda';
+import SelecaoItens from './pages/SelecaoItens/SelecaoItens';
+import VendaDetalhe from './pages/VendaDetalhe/VendaDetalhe';
+import Extrato from './pages/Extrato/Extrato';
+import Perfil from './pages/Perfil/Perfil';
+import AlterarSenha from './pages/AlterarSenha/AlterarSenha';
+
+export default function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <AuthProvider>
-        <div className="bg-gray-100 flex justify-center min-h-screen">
-          <Routes>
-            <Route path="/" element={<Login />} />
-            
-            <Route element={<ProtectedRoute />}>
-              <Route path="/painel" element={<PainelVendas />} />
-              <Route path="/clientes" element={<Clientes />} />
-              <Route path="/clientes/novo" element={<ClienteCadastro />} />
-              <Route path="/clientes/:id" element={<ClienteDetalhe />} />
-              <Route path="/clientes/:id/editar" element={<ClienteEdicao />} />
-              <Route path="/produtos" element={<Produtos />} />
-              <Route path="/produtos/destaque" element={<ProdutosDestaque />} />
-              <Route path="/produtos/novo" element={<NovoProduto />} />
-              <Route path="/vendas" element={<ListaVendas />} />
-              <Route path="/vendas/nova" element={<NovaVenda />} />
-              <Route path="/vendas/parcelamento" element={<ParcelamentoVenda />} />
-              <Route path="/pagamentos" element={<Pagamentos />} />
-              <Route path="/mais" element={<PerfilAjustes />} />
-            </Route>
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          
+          <Route element={<ProtectedRoute />}>
+            <Route path="/painel" element={<Painel />} />
+            <Route path="/clientes" element={<Clientes />} />
+            <Route path="/clientes/novo" element={<ClienteForm />} />
+            <Route path="/clientes/:id" element={<ClienteDetalhe />} />
+            <Route path="/clientes/:id/editar" element={<ClienteForm />} />
+            <Route path="/produtos" element={<Produtos />} />
+            <Route path="/produtos/novo" element={<ProdutoForm />} />
+            <Route path="/produtos/:id/editar" element={<ProdutoForm />} />
+            <Route path="/vendas" element={<Vendas />} />
+            <Route path="/vendas/nova" element={<RegistrarVenda />} />
+            <Route path="/vendas/nova/itens" element={<SelecaoItens />} />
+            <Route path="/vendas/:id" element={<VendaDetalhe />} />
+            <Route path="/pagamentos" element={<Extrato />} />
+            <Route path="/perfil" element={<Perfil />} />
+            <Route path="/perfil/senha" element={<AlterarSenha />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </AuthProvider>
-    </Router>
+    </BrowserRouter>
   );
 }
-
-export default App;

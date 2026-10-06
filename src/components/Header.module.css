@@ -1,0 +1,50 @@
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--altura-cabecalho);
+  padding: 0 var(--margem-tela);
+  background: var(--cor-fundo);
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.inicio {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.titulo {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--cor-preto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Área de toque de 44px em volta de ícones de 18px. */
+.botaoIcone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -13px;
+  border-radius: var(--raio-pilula);
+}
+
+.botaoIcone:active {
+  background: var(--cor-superficie-suave);
+}
+
+.seta {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--cor-texto);
+}

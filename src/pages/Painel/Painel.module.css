@@ -1,0 +1,374 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.titulo {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.periodo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.atalhos {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--cor-superficie-suave);
+  border-radius: var(--raio-cartao);
+}
+
+.atalho {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #454747;
+  white-space: nowrap;
+  border-radius: 9px;
+}
+
+.atalhoAtivo {
+  font-weight: 700;
+  color: var(--cor-texto);
+  background: var(--cor-superficie);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.intervalo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 14px;
+  text-align: left;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+}
+
+.intervaloTexto {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.alterar {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cor-preto);
+  text-decoration: underline;
+}
+
+/* Chip do Figma: 16px, ícone à esquerda. O Chip compartilhado é menor, por isso local. */
+.chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 17px;
+  font-size: 16px;
+  color: var(--cor-texto-secundario);
+  white-space: nowrap;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pilula);
+}
+
+.chipAtivo {
+  color: var(--cor-branco);
+  background: var(--cor-preto);
+  border-color: var(--cor-preto);
+}
+
+/* Os SVGs vêm em cinza (o de Roupas em branco): a cor do ícone segue o estado do chip. */
+.chipIcone {
+  filter: brightness(0) invert(0.27);
+}
+
+.chipAtivo .chipIcone {
+  filter: brightness(0) invert(1);
+}
+
+.metricas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.metrica {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  height: 128px;
+  padding: 17px;
+  overflow: hidden;
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+}
+
+.metricaLarga {
+  grid-column: 1 / span 2;
+  justify-content: flex-start;
+}
+
+.circulo {
+  position: absolute;
+  right: -16px;
+  bottom: -16px;
+  width: 80px;
+  height: 80px;
+  background: var(--cor-avatar);
+  border-radius: var(--raio-pilula);
+  opacity: 0.3;
+}
+
+.valor {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.indicador {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.variacao {
+  margin-left: 0;
+  font-weight: 600;
+  color: var(--cor-positivo);
+}
+
+.legenda {
+  padding-left: 4px;
+  color: var(--cor-texto-secundario);
+}
+
+.cartaoGrafico,
+.lista {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+}
+
+.cartaoGrafico {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 29px 21px 21px;
+}
+
+.tituloCartao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.grafico {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  height: 192px;
+  padding-bottom: 25px;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.linhasEscala {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.linhasEscala span {
+  border-top: 1px solid var(--cor-texto);
+}
+
+.barra {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  background: #e8e8e8;
+  border-radius: 2px 2px 0 0;
+}
+
+.barraAtual {
+  background: var(--cor-preto);
+}
+
+.barraRotulo {
+  position: absolute;
+  right: 0;
+  bottom: -24px;
+  left: 0;
+  font-size: 10px;
+  line-height: 15px;
+  text-align: center;
+  color: var(--cor-texto-secundario);
+}
+
+.barraAtual .barraRotulo {
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.legendaGrafico {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 8px 0 0;
+  list-style: none;
+  font-size: 10px;
+  line-height: 15px;
+  color: var(--cor-texto-secundario);
+}
+
+.legendaGrafico li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ponto {
+  width: 8px;
+  height: 8px;
+  background: #e8e8e8;
+  border-radius: var(--raio-pilula);
+}
+
+.pontoAtual {
+  background: var(--cor-preto);
+}
+
+.lista {
+  overflow: hidden;
+}
+
+.tituloLista {
+  padding: 20px;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.itens {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.item + .item {
+  border-top: 1px solid var(--cor-borda);
+}
+
+.posicao {
+  flex-shrink: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  color: var(--cor-texto-secundario);
+}
+
+.itemTexto {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemNome {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.itemCategoria {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cor-texto-secundario);
+}
+
+.itemQtd {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.unidades {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.itemValor {
+  font-size: 10px;
+  line-height: 15px;
+  color: var(--cor-positivo);
+}
+
+.relatorio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--cor-preto);
+  border-top: 1px solid var(--cor-borda);
+}
+
+/* Ícone de calendário desenhado como no Figma (dois retângulos de 16x14). */
+.iconeCalendario {
+  position: relative;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+}
+
+.iconeCalendario::before,
+.iconeCalendario::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  width: 16px;
+  box-sizing: border-box;
+}
+
+.iconeCalendario::before {
+  top: 3px;
+  height: 14px;
+  border: 1.6px solid var(--cor-texto);
+  border-radius: 3px;
+}
+
+.iconeCalendario::after {
+  top: 3px;
+  height: 4px;
+  background: var(--cor-texto);
+  border-radius: 3px 3px 0 0;
+}
