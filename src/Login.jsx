@@ -1,17 +1,19 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useAuth } from "./contexts/AuthContext";
 
 export default function Login() {
-  const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log({ email, password });
-    // Navigate to painel on successful login
-    navigate("/painel");
+    try {
+      await login(email, password);
+    } catch {
+      alert("Falha no login. Verifique suas credenciais.");
+    }
   };
 
   return (

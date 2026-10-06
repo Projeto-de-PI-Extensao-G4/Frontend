@@ -1,16 +1,35 @@
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import BottomNavigation from "./components/BottomNavigation";
+import { listarClientes, mensagemDeErro, formatarTelefone } from "./services/clientes";
 
 export default function Clientes() {
   const navigate = useNavigate();
-  const clients = [
-    { name: "Antônio Ferreira", phone: "(11) 98765-4321" },
-    { name: "Beatriz Souza", phone: "(11) 91234-5678" },
-    { name: "Carlos Mendes", phone: "(11) 97766-5544" },
-    { name: "Daniela Lima", phone: "(11) 99988-7766" },
-    { name: "Eduarda Santos", phone: "(11) 95544-3322" },
-  ];
+  const [clients, setClients] = useState([]);
+  const [busca, setBusca] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState("");
+
+  // Busca no backend com debounce de 300ms para nao disparar uma requisicao por tecla
+  useEffect(() => {
+    let cancelado = false;
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setErro("");
+      try {
+        const pagina = await listarClientes({ busca });
+        if (!cancelado) setClients(pagina.conteudo);
+      } catch (e) {
+        if (!cancelado) setErro(mensagemDeErro(e, "Não foi possível carregar os clientes."));
+      } finally {
+        if (!cancelado) setLoading(false);
+      }
+    }, 300);
+    return () => {
+      cancelado = true;
+      clearTimeout(timer);
+    };
+  }, [busca]);
 
   return (
     <div className="w-full max-w-md bg-white min-h-screen flex flex-col relative shadow-xl overflow-hidden border-x border-gray-200">
@@ -33,20 +52,25 @@ export default function Clientes() {
               <path d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" strokeLinecap="round" strokeLinejoin="round"></path>
             </svg>
           </span>
-          <input className="w-full pl-11 pr-4 py-3 bg-white border border-gray-300 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors shadow-sm" placeholder="Buscar por nome ou telefone..." type="text"/>
+          <input value={busca} onChange={(e) => setBusca(e.target.value)} className="w-full pl-11 pr-4 py-3 bg-white border border-gray-300 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-gray-900 transition-colors shadow-sm" placeholder="Buscar por nome ou telefone..." type="text"/>
         </div>
 
         {/* CustomerList */}
         <div className="flex flex-col gap-3">
-          {clients.map((client, i) => (
-            <article key={i} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 transition-shadow">
+          {loading && <p className="text-sm text-gray-500 text-center py-6">Carregando...</p>}
+          {!loading && erro && <p className="text-sm text-red-600 text-center py-6 whitespace-pre-line">{erro}</p>}
+          {!loading && !erro && clients.length === 0 && (
+            <p className="text-sm text-gray-500 text-center py-6">Nenhum cliente encontrado.</p>
+          )}
+          {!loading && !erro && clients.map((client) => (
+            <article key={client.id} onClick={() => navigate(`/clientes/${client.id}`)} className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-gray-300 transition-shadow cursor-pointer">
               <div className="flex flex-col gap-1">
-                <h3 className="text-base font-bold text-gray-900 leading-tight">{client.name}</h3>
+                <h3 className="text-base font-bold text-gray-900 leading-tight">{client.nomeCompleto}</h3>
                 <div className="flex items-center text-xs text-gray-600 font-medium gap-1.5">
                   <svg className="w-3.5 h-3.5 text-gray-700 stroke-[2]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" strokeLinecap="round" strokeLinejoin="round"></path>
                   </svg>
-                  <span>{client.phone}</span>
+                  <span>{client.telefonePrincipal ? formatarTelefone(client.telefonePrincipal) : "Sem telefone"}</span>
                 </div>
               </div>
               <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 cursor-pointer">

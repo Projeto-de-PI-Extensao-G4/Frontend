@@ -1,13 +1,28 @@
 import { useNavigate } from "react-router-dom";
-import React from "react";
+import React, { useState } from "react";
 import BottomNavigation from "./components/BottomNavigation";
+import { cadastrarCliente, mensagemDeErro } from "./services/clientes";
 
 export default function ClienteCadastro() {
   const navigate = useNavigate();
-  const handleSave = (e) => {
+  const [form, setForm] = useState({ nomeCompleto: "", cpf: "", telefone: "" });
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState("");
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSave = async (e) => {
     e.preventDefault();
-    // Simulate save, then navigate back to list
-    navigate("/clientes");
+    setSalvando(true);
+    setErro("");
+    try {
+      await cadastrarCliente(form);
+      navigate("/clientes");
+    } catch (err) {
+      setErro(mensagemDeErro(err, "Não foi possível salvar o cliente."));
+    } finally {
+      setSalvando(false);
+    }
   };
 
   return (
@@ -40,7 +55,7 @@ export default function ClienteCadastro() {
               </svg>
               <span>Nome Completo</span>
             </label>
-            <input className="w-full px-3.5 py-3 text-sm text-gray-900 bg-white rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all shadow-sm" id="nome-completo" name="nomeCompleto" placeholder="Ex: João da Silva" type="text" required />
+            <input className="w-full px-3.5 py-3 text-sm text-gray-900 bg-white rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all shadow-sm" value={form.nomeCompleto} onChange={handleChange} id="nome-completo" name="nomeCompleto" placeholder="Ex: João da Silva" type="text" required />
           </div>
 
           <div className="space-y-1.5">
@@ -50,7 +65,7 @@ export default function ClienteCadastro() {
               </svg>
               <span>CPF</span>
             </label>
-            <input className="w-full px-3.5 py-3 text-sm text-gray-900 bg-white rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all shadow-sm" id="cpf" inputMode="numeric" name="cpf" placeholder="000.000.000-00" type="text" required />
+            <input className="w-full px-3.5 py-3 text-sm text-gray-900 bg-white rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all shadow-sm" value={form.cpf} onChange={handleChange} id="cpf" inputMode="numeric" name="cpf" placeholder="000.000.000-00" type="text" required />
           </div>
 
           <div className="space-y-1.5">
@@ -60,15 +75,17 @@ export default function ClienteCadastro() {
               </svg>
               <span>Telefone</span>
             </label>
-            <input className="w-full px-3.5 py-3 text-sm text-gray-900 bg-white rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all shadow-sm" id="telefone" inputMode="tel" name="telefone" placeholder="(00) 00000-0000" type="tel" required />
+            <input className="w-full px-3.5 py-3 text-sm text-gray-900 bg-white rounded-lg border border-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all shadow-sm" value={form.telefone} onChange={handleChange} id="telefone" inputMode="tel" name="telefone" placeholder="(00) 00000-0000" type="tel" required />
           </div>
 
+          {erro && <p className="text-sm text-red-600 whitespace-pre-line" role="alert">{erro}</p>}
+
           <div className="pt-3 space-y-2.5">
-            <button className="w-full py-3.5 px-4 bg-black hover:bg-gray-800 active:bg-gray-900 text-white font-medium text-sm rounded-lg flex items-center justify-center space-x-2 transition shadow-sm" type="submit">
+            <button className="w-full py-3.5 px-4 bg-black hover:bg-gray-800 active:bg-gray-900 text-white font-medium text-sm rounded-lg flex items-center justify-center space-x-2 transition shadow-sm" type="submit" disabled={salvando}>
               <svg aria-hidden="true" className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" strokeLinecap="round" strokeLinejoin="round"></path>
               </svg>
-              <span>Salvar Cliente</span>
+              <span>{salvando ? "Salvando..." : "Salvar Cliente"}</span>
             </button>
             <button 
               onClick={() => navigate("/clientes")}

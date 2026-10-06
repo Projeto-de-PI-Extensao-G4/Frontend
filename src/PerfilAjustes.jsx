@@ -1,9 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "./contexts/AuthContext";
 import React from "react";
 import BottomNavigation from "./components/BottomNavigation";
 
 export default function PerfilAjustes() {
-  const navigate = useNavigate();
+  const { logout } = useAuth();
   return (
     <div className="w-full max-w-[430px] min-h-screen bg-white flex flex-col justify-between shadow-2xl relative">
       <div className="flex-1 overflow-y-auto pb-28">
@@ -78,7 +78,8 @@ export default function PerfilAjustes() {
           </button>
 
           <div className="pt-2">
-            <button onClick={() => navigate('/')} className="min-h-[58px] w-full px-4 py-3.5 bg-red-100/80 hover:bg-red-200/90 border-2 border-red-200 rounded-2xl flex items-center justify-between text-red-700 transition-colors" type="button">
+            <button onClick={logout} className="min-h-[58px] w-full px-4 py-3.5 bg-red-100/80 hover:bg-red-200/90 border-2 border-red-200 rounded-2xl flex items-center justify-between text-red-700 transition-colors" type="button">
+
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-xl bg-red-200/60 flex items-center justify-center text-red-700 shrink-0">
                   <svg className="w-6 h-6 stroke-current stroke-[2.2] fill-none" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" strokeLinecap="round" strokeLinejoin="round"></path></svg>
