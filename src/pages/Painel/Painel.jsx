@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
-import { BotaoBuscaHeader } from '../../components/Header';
 import { LinhaChips } from '../../components/Chip';
 import BotaoFlutuante from '../../components/BotaoFlutuante';
 import FolhaPeriodo from './FolhaPeriodo';
@@ -98,7 +97,7 @@ export default function Painel() {
 
   return (
     <AppLayout
-      cabecalho={{ titulo: 'Cris Utilidades', esquerda: 'menu', direita: <BotaoBuscaHeader /> }}
+      cabecalho={{ titulo: 'Cris Utilidades', esquerda: 'menu' }}
       flutuante={<BotaoFlutuante rotulo="Registrar venda" para="/vendas/nova" />}
     >
       <div className={styles.pagina}>

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { icones } from './icones';
 import styles from './Header.module.css';
 
-// esquerda: 'menu' | 'voltar' | null. direita: qualquer nó (ex.: <BotaoBuscaHeader />).
+// esquerda: 'menu' | 'voltar' | null. direita: qualquer nó.
 export default function Header({ titulo = 'Cris Utilidades', esquerda = 'menu', direita = null }) {
   const navigate = useNavigate();
 
@@ -23,14 +23,6 @@ export default function Header({ titulo = 'Cris Utilidades', esquerda = 'menu', 
       </div>
       {direita}
     </header>
-  );
-}
-
-export function BotaoBuscaHeader({ onClick }) {
-  return (
-    <button type="button" className={styles.botaoIcone} aria-label="Buscar" onClick={onClick}>
-      <img src={icones.buscaHeader} width={18} height={18} alt="" />
-    </button>
   );
 }
 

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
-import { BotaoBuscaHeader } from '../../components/Header';
+
 import CampoBusca from '../../components/CampoBusca';
 import Chip, { LinhaChips } from '../../components/Chip';
 import { BadgeStatus } from '../../components/Badge';
@@ -10,16 +10,7 @@ import { icones } from '../../components/icones';
 import calendario from '../../assets/icons/calendario.svg';
 import styles from './Vendas.module.css';
 
-const VENDAS = [
-  { id: 94821, clienteNome: 'Ricardo Oliveira Almeida', dataVenda: '2023-10-24T14:32:10', valorTotal: 1240, status: 'PAGA', parcelasPagas: 1, qtdParcelas: 1 },
-  { id: 94819, clienteNome: 'Mariana Costa Silva', dataVenda: '2023-10-24T10:05:41', valorTotal: 450.2, status: 'PENDENTE', parcelasPagas: 1, qtdParcelas: 3 },
-  { id: 94815, clienteNome: 'Paulo Henrique Souza', dataVenda: '2023-10-23T17:48:03', valorTotal: 8900, status: 'PAGA', parcelasPagas: 4, qtdParcelas: 4 },
-  { id: 94810, clienteNome: 'Fernanda Gomes de Souza', dataVenda: '2023-10-23T09:12:59', valorTotal: 112, status: 'CANCELADA', parcelasPagas: 0, qtdParcelas: 2 },
-  { id: 94802, clienteNome: 'Ana Beatriz Silva', dataVenda: '2023-10-22T16:20:00', valorTotal: 1250, status: 'PENDENTE', parcelasPagas: 1, qtdParcelas: 3 },
-  { id: 94797, clienteNome: 'Carlos Eduardo Lima', dataVenda: '2023-10-21T11:37:22', valorTotal: 329.9, status: 'PAGA', parcelasPagas: 2, qtdParcelas: 2 },
-  { id: 94790, clienteNome: 'Juliana Martins', dataVenda: '2023-10-20T15:01:48', valorTotal: 780, status: 'PENDENTE', parcelasPagas: 0, qtdParcelas: 5 },
-  { id: 94781, clienteNome: 'Roberto Nascimento', dataVenda: '2023-10-19T08:55:16', valorTotal: 96.5, status: 'CANCELADA', parcelasPagas: 0, qtdParcelas: 1 },
-];
+import { listarVendas, resumoVendas } from '../../services/vendas';
 
 const ABAS = [
   { rotulo: 'Todas', status: null },
@@ -28,59 +19,89 @@ const ABAS = [
   { rotulo: 'Canceladas', status: 'CANCELADA' },
 ];
 
-const RESUMO = [
-  { rotulo: 'Total Mensal', valor: 'R$ 12.450,00' },
-  { rotulo: 'Vendas Hoje', valor: '24', detalhe: 'Média: 18/dia' },
-  { rotulo: 'Ticket Médio', valor: 'R$ 518,75' },
-];
-
-const POR_PAGINA = 4;
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+const moeda = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-const moeda = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const semAcento = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-
-// Formata sem passar por Date: evita o deslocamento de fuso (spec §3.1).
-function formatarData(iso) {
-  const [ano, mes, dia] = iso.slice(0, 10).split('-');
-  return `${dia} ${MESES[Number(mes) - 1]}, ${ano}`;
-}
-
-function combina(venda, termo) {
-  if (!termo) return true;
-  const digitos = termo.replace(/\D/g, '');
-  return semAcento(venda.clienteNome).includes(termo) || (digitos !== '' && String(venda.id).includes(digitos));
+function formatarData(isoString) {
+  if (!isoString) return '';
+  const d = new Date(isoString);
+  const hoje = new Date();
+  if (d.toDateString() === hoje.toDateString()) {
+    return `Hoje, ${d.getHours()}h${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+  return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 export default function Vendas() {
   const [busca, setBusca] = useState('');
-  const [aba, setAba] = useState(ABAS[0].rotulo);
-  const [visiveis, setVisiveis] = useState(POR_PAGINA);
+  const [status, setStatus] = useState(null);
+  
+  const [vendas, setVendas] = useState([]);
+  const [resumo, setResumo] = useState(null);
+  const [pagina, setPagina] = useState(0);
+  const [temMais, setTemMais] = useState(false);
+  
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState('');
 
-  const status = ABAS.find((a) => a.rotulo === aba).status;
-  const termo = semAcento(busca.trim());
-  const filtradas = VENDAS.filter((v) => (!status || v.status === status) && combina(v, termo));
-  const exibidas = filtradas.slice(0, visiveis);
+  // Carrega o resumo uma vez
+  useEffect(() => {
+    resumoVendas()
+      .then(setResumo)
+      .catch(() => console.error("Erro ao carregar resumo de vendas"));
+  }, []);
 
-  const escolherAba = (rotulo) => {
-    setAba(rotulo);
-    setVisiveis(POR_PAGINA);
+  // Carrega a lista quando mudar busca, status ou para a pagina 0
+  useEffect(() => {
+    const carregar = async () => {
+      setCarregando(true);
+      setErro('');
+      try {
+        // Usa o estado local ou query param para filtrar o status na API se for suportado,
+        // mas o backend listarVendas() no Controller nao tem param `status`!
+        // Wait, I saw `@RequestParam(required = false) String busca`
+        // No status filter in the backend!
+        // We will fetch ALL and filter locally for now.
+        
+        const data = await listarVendas({ busca, pagina: 0, tamanho: 100 });
+        setVendas(data.conteudo || []);
+        setTemMais(!data.ultima);
+        setPagina(0);
+      } catch (err) {
+        setErro('Erro ao carregar vendas.');
+      } finally {
+        setCarregando(false);
+      }
+    };
+    
+    const timeout = setTimeout(carregar, 300);
+    return () => clearTimeout(timeout);
+  }, [busca]);
+
+  const carregarMais = async () => {
+    try {
+      const proxima = pagina + 1;
+      const data = await listarVendas({ busca, pagina: proxima, tamanho: 100 });
+      setVendas(v => [...v, ...(data.conteudo || [])]);
+      setTemMais(!data.ultima);
+      setPagina(proxima);
+    } catch (err) {
+      console.error(err);
+    }
   };
-  const mudarBusca = (valor) => {
-    setBusca(valor);
-    setVisiveis(POR_PAGINA);
-  };
+
+  const filtradas = status ? vendas.filter(v => v.statusVendaSituacaoSituacao === status) : vendas;
 
   return (
     <AppLayout
-      cabecalho={{ titulo: 'Cris Utilidades', esquerda: 'menu', direita: <BotaoBuscaHeader /> }}
+      cabecalho={{ titulo: 'Vendas' }}
       flutuante={<BotaoFlutuante rotulo="Nova venda" para="/vendas/nova" />}
     >
       <div className={styles.filtros}>
-        <CampoBusca placeholder="Buscar vendas por cliente ou ID..." valor={busca} onChange={mudarBusca} />
-        <LinhaChips rotulo="Filtrar por situação">
+        <CampoBusca placeholder="ID, cliente..." valor={busca} onChange={setBusca} />
+        <LinhaChips rotulo="Filtro">
           {ABAS.map((a) => (
-            <Chip key={a.rotulo} ativo={a.rotulo === aba} onClick={() => escolherAba(a.rotulo)}>
+            <Chip key={a.rotulo} ativo={status === a.status} onClick={() => setStatus(a.status)}>
               {a.rotulo}
             </Chip>
           ))}
@@ -88,13 +109,21 @@ export default function Vendas() {
       </div>
 
       <section className={styles.resumo} aria-label="Resumo de vendas">
-        {RESUMO.map((r) => (
-          <div key={r.rotulo} className={styles.cartaoResumo}>
-            <span className={styles.resumoRotulo}>{r.rotulo}</span>
-            <strong className={styles.resumoValor}>{r.valor}</strong>
-            {r.detalhe && <span className={styles.resumoDetalhe}>{r.detalhe}</span>}
-          </div>
-        ))}
+        <div className={styles.cartaoResumo}>
+          <span className={styles.resumoRotulo}>Total Mensal</span>
+          <strong className={styles.resumoValor}>{resumo ? moeda(resumo.totalMes) : '...'}</strong>
+        </div>
+        <div className={styles.cartaoResumo}>
+          <span className={styles.resumoRotulo}>Vendas Hoje</span>
+          <strong className={styles.resumoValor}>{resumo ? resumo.vendasHoje : '...'}</strong>
+          <span className={styles.resumoDetalhe}>
+             {resumo ? `Média: ${Math.round(resumo.mediaDiaria || 0)}/dia` : '...'}
+          </span>
+        </div>
+        <div className={styles.cartaoResumo}>
+          <span className={styles.resumoRotulo}>Ticket Médio</span>
+          <strong className={styles.resumoValor}>{resumo ? moeda(resumo.ticketMedio) : '...'}</strong>
+        </div>
       </section>
 
       <section className={styles.lista}>
@@ -105,9 +134,11 @@ export default function Vendas() {
           </span>
         </div>
 
-        {exibidas.length === 0 && <p className={`texto-apoio ${styles.vazio}`}>Nenhuma venda encontrada.</p>}
+        {carregando && <p className={`texto-apoio ${styles.vazio}`}>Carregando...</p>}
+        {!carregando && erro && <p className={`texto-apoio ${styles.vazio}`} style={{color: 'red'}}>{erro}</p>}
+        {!carregando && !erro && filtradas.length === 0 && <p className={`texto-apoio ${styles.vazio}`}>Nenhuma venda encontrada.</p>}
 
-        {exibidas.map((v) => (
+        {!carregando && !erro && filtradas.map((v) => (
           <Link key={v.id} to={`/vendas/${v.id}`} className={styles.venda}>
             <div className={styles.vendaTopo}>
               <div className={styles.vendaInfo}>
@@ -120,12 +151,12 @@ export default function Vendas() {
               </div>
               <div className={styles.vendaValor}>
                 <strong className={styles.valor}>{moeda(v.valorTotal)}</strong>
-                <BadgeStatus status={v.status} />
+                <BadgeStatus status={v.statusVendaSituacao} />
               </div>
             </div>
             <div className={styles.vendaRodape}>
               <span className="rotulo-secao">
-                {v.parcelasPagas}/{v.qtdParcelas} pagas
+                {v.parcelasPagas || 0}/{v.qtdParcelas} pagas
               </span>
               <span className={styles.verDetalhes}>
                 Ver Detalhes do Pagamento
@@ -135,9 +166,9 @@ export default function Vendas() {
           </Link>
         ))}
 
-        {visiveis < filtradas.length && (
+        {temMais && (
           <div className={styles.carregarMais}>
-            <button type="button" className={styles.botaoMais} onClick={() => setVisiveis((n) => n + POR_PAGINA)}>
+            <button type="button" className={styles.botaoMais} onClick={carregarMais}>
               Carregar mais vendas
               <img src={icones.chevronBaixo} width={12} height={7.4} alt="" />
             </button>

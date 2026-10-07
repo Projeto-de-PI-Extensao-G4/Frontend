@@ -7,6 +7,14 @@ export async function listarClientes({ busca = '', pagina = 0, tamanho = 20 } = 
   return data; // { conteudo, pagina, tamanho, totalElementos, totalPaginas, ultima }
 }
 
+export async function obterResumoClientes(dataInicio, dataFim) {
+  const params = {};
+  if (dataInicio) params.dataInicio = dataInicio;
+  if (dataFim) params.dataFim = dataFim;
+  const { data } = await api.get('/clientes/resumo', { params });
+  return data;
+}
+
 export async function buscarCliente(id) {
   const { data } = await api.get(`/clientes/${id}`);
   return data;

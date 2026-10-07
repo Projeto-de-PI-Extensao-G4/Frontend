@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
-import { BotaoBuscaHeader } from '../../components/Header';
+
 import CampoBusca from '../../components/CampoBusca';
 import Chip, { LinhaChips } from '../../components/Chip';
 import Cartao from '../../components/Cartao';
@@ -9,18 +9,15 @@ import BotaoFlutuante from '../../components/BotaoFlutuante';
 import editar from '../../assets/icons/editar.svg';
 import olho from '../../assets/icons/olho.svg';
 import olhoRiscado from '../../assets/icons/olho-riscado.svg';
+
+// Imagens fallback (ou pegamos as reais caso existam no backend)
 import relogio from '../../assets/images/produtos/relogio.png';
 import camera from '../../assets/images/produtos/camera.png';
 import utensilios from '../../assets/images/produtos/utensilios.png';
 import prateleira from '../../assets/images/produtos/prateleira.png';
-import styles from './Produtos.module.css';
 
-const INICIAIS = [
-  { id: 1, categoria: 'Roupas', nome: 'Jogo de Lençol Casal', preco: 'R$ 299,90', ativo: true, foto: relogio },
-  { id: 2, categoria: 'Mesa', nome: 'Toalha de Mesa Linho', preco: 'R$ 549,00', ativo: false, foto: camera },
-  { id: 3, categoria: 'Banho', nome: 'Toalha de Banho Algodão', preco: 'R$ 185,50', ativo: true, foto: utensilios },
-  { id: 4, categoria: 'Imóveis', nome: 'Aparador de Madeira', preco: 'R$ 75,00', ativo: true, foto: prateleira },
-];
+import styles from './Produtos.module.css';
+import { listarProdutos, alterarStatusProduto, formatarMoeda } from '../../services/produtos';
 
 const FILTROS = [
   { chave: 'todos', rotulo: 'Todos' },
@@ -29,23 +26,65 @@ const FILTROS = [
 ];
 
 export default function Produtos() {
-  const [produtos, setProdutos] = useState(INICIAIS);
-  const [filtro, setFiltro] = useState('todos');
+  const [produtos, setProdutos] = useState([]);
+  const [filtro, setFiltro] = useState('todos'); // 'todos', 'ativos' ou 'inativos'
   const [busca, setBusca] = useState('');
+  
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState('');
 
-  const termo = busca.trim().toLowerCase();
-  const visiveis = produtos.filter((p) => {
-    if (filtro === 'ativos' && !p.ativo) return false;
-    if (filtro === 'inativos' && p.ativo) return false;
-    return p.nome.toLowerCase().includes(termo);
-  });
+  useEffect(() => {
+    const fetchProdutos = async () => {
+      setCarregando(true);
+      setErro('');
+      try {
+        const queryStatus = filtro === 'ativos' ? 'ATIVO' : filtro === 'inativos' ? 'INATIVO' : undefined;
+        const data = await listarProdutos({ busca, status: queryStatus });
+        setProdutos(data.conteudo || []);
+      } catch (err) {
+        setErro('Erro ao carregar os produtos.');
+      } finally {
+        setCarregando(false);
+      }
+    };
+    
+    const timeout = setTimeout(fetchProdutos, 300);
+    return () => clearTimeout(timeout);
+  }, [busca, filtro]);
 
-  const alternarStatus = (id) =>
-    setProdutos((lista) => lista.map((p) => (p.id === id ? { ...p, ativo: !p.ativo } : p)));
+  const alternarStatus = async (id, statusAtual) => {
+    try {
+      const novoStatus = statusAtual === 'ATIVO' ? 'INATIVO' : 'ATIVO';
+      await alterarStatusProduto(id, novoStatus);
+      
+      // Atualiza a lista local sem recarregar tudo
+      setProdutos((lista) => lista.map((p) => {
+        if (p.id === id) {
+          return { ...p, status: novoStatus };
+        }
+        return p;
+      }));
+    } catch (err) {
+      alert('Erro ao alterar status do produto.');
+    }
+  };
+  
+  // Função que mapeia o nome da categoria para a imagem mockada correta 
+  // caso o backend não tenha upload de imagem implementado
+  const getImagem = (nomeOuId) => {
+    const mapeamento = {
+      1: relogio, // Roupas
+      2: camera, // Mesa
+      3: utensilios, // Banho
+      4: prateleira // Imóveis
+    };
+    // fallback aleatorio pra nao ficar vazio
+    return mapeamento[nomeOuId] || prateleira;
+  };
 
   return (
     <AppLayout
-      cabecalho={{ titulo: 'Produtos', direita: <BotaoBuscaHeader /> }}
+      cabecalho={{ titulo: 'Produtos' }}
       flutuante={<BotaoFlutuante rotulo="Novo produto" para="/produtos/novo" />}
     >
       <div className={styles.filtros}>
@@ -60,43 +99,50 @@ export default function Produtos() {
       </div>
 
       <ul className={styles.lista}>
-        {visiveis.map((p) => (
-          <li key={p.id}>
-            <Cartao className={`${styles.cartao} ${p.ativo ? '' : styles.inativo}`}>
-              <Link to={`/produtos/${p.id}/editar`} className={styles.corpo}>
-                <span className={styles.foto}>
-                  <img src={p.foto} alt="" />
-                </span>
-                <span className={styles.texto}>
-                  <span className={styles.linhaTopo}>
-                    <span className={styles.categoria}>{p.categoria}</span>
-                    <span className={`${styles.status} ${p.ativo ? '' : styles.statusInativo}`}>
-                      <span className={styles.ponto} />
-                      {p.ativo ? 'ATIVO' : 'INATIVO'}
-                    </span>
+        {carregando && <p className="texto-apoio">Carregando...</p>}
+        {!carregando && erro && <p className="texto-apoio" style={{color: 'red'}}>{erro}</p>}
+        
+        {!carregando && !erro && produtos.map((p) => {
+          const ativo = p.status === 'ATIVO';
+          
+          return (
+            <li key={p.id}>
+              <Cartao className={`${styles.cartao} ${ativo ? '' : styles.inativo}`}>
+                <Link to={`/produtos/${p.id}/editar`} className={styles.corpo}>
+                  <span className={styles.foto}>
+                    <img src={p.imagemUrl || getImagem(p.categoria?.id)} alt="" />
                   </span>
-                  <span className={styles.nome}>{p.nome}</span>
-                  <span className={styles.preco}>{p.preco}</span>
-                </span>
-              </Link>
-              <div className={styles.acoes}>
-                <Link to={`/produtos/${p.id}/editar`} className={styles.acao} aria-label={`Editar ${p.nome}`}>
-                  <img src={editar} width={18} height={18} alt="" />
+                  <span className={styles.texto}>
+                    <span className={styles.linhaTopo}>
+                      <span className={styles.categoria}>{p.categoria?.nome}</span>
+                      <span className={`${styles.status} ${ativo ? '' : styles.statusInativo}`}>
+                        <span className={styles.ponto} />
+                        {ativo ? 'ATIVO' : 'INATIVO'}
+                      </span>
+                    </span>
+                    <span className={styles.nome}>{p.nome}</span>
+                    <span className={styles.preco}>{formatarMoeda(p.precoVenda)}</span>
+                  </span>
                 </Link>
-                <button
-                  type="button"
-                  className={styles.acao}
-                  aria-label={p.ativo ? `Inativar ${p.nome}` : `Ativar ${p.nome}`}
-                  onClick={() => alternarStatus(p.id)}
-                >
-                  <img src={p.ativo ? olho : olhoRiscado} width={22} height={p.ativo ? 15 : 19.8} alt="" />
-                </button>
-              </div>
-            </Cartao>
-          </li>
-        ))}
+                <div className={styles.acoes}>
+                  <Link to={`/produtos/${p.id}/editar`} className={styles.acao} aria-label={`Editar ${p.nome}`}>
+                    <img src={editar} width={18} height={18} alt="" />
+                  </Link>
+                  <button
+                    type="button"
+                    className={styles.acao}
+                    aria-label={ativo ? `Inativar ${p.nome}` : `Ativar ${p.nome}`}
+                    onClick={() => alternarStatus(p.id, p.status)}
+                  >
+                    <img src={ativo ? olho : olhoRiscado} width={22} height={ativo ? 15 : 19.8} alt="" />
+                  </button>
+                </div>
+              </Cartao>
+            </li>
+          );
+        })}
       </ul>
-      {visiveis.length === 0 && <p className="texto-apoio">Nenhum produto encontrado.</p>}
+      {!carregando && !erro && produtos.length === 0 && <p className="texto-apoio">Nenhum produto encontrado.</p>}
     </AppLayout>
   );
 }

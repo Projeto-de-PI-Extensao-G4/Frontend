@@ -23,7 +23,7 @@
   gap: 2px;
   min-width: 44px;
   min-height: 44px;
-  color: var(--cor-texto-secundario);
+  color: var(--cor-texto-apagado);
 }
 
 .ativa {

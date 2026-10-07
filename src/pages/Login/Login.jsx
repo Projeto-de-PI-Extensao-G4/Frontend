@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import logo from '../../assets/images/login/logo-cris-utilidades.jpg';
 import iconeEmail from '../../assets/icons/email.svg';
 import iconeCadeado from '../../assets/icons/cadeado.svg';
@@ -9,11 +10,27 @@ import styles from './Login.module.css';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(false);
 
-  const entrar = (e) => {
+  const entrar = async (e) => {
     e.preventDefault();
-    navigate('/painel');
+    setErro('');
+    setCarregando(true);
+
+    try {
+      await login(email, senha);
+      navigate('/painel');
+    } catch (err) {
+      setErro('Credenciais inválidas. Tente novamente.');
+    } finally {
+      setCarregando(false);
+    }
   };
 
   return (
@@ -27,6 +44,8 @@ export default function Login() {
         </div>
 
         <form className={styles.cartao} onSubmit={entrar}>
+          {erro && <div style={{ color: 'red', marginBottom: '1rem', textAlign: 'center' }}>{erro}</div>}
+          
           <div className={styles.campo}>
             <label htmlFor="email" className={styles.rotulo}>E-mail</label>
             <div className={styles.caixa}>
@@ -38,6 +57,9 @@ export default function Login() {
                 autoComplete="email"
                 placeholder="email@exemplo.com"
                 className={styles.input}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
           </div>
@@ -52,6 +74,9 @@ export default function Login() {
                 autoComplete="current-password"
                 placeholder="Digite sua senha"
                 className={styles.input}
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                required
               />
               <button
                 type="button"
@@ -65,7 +90,9 @@ export default function Login() {
             </div>
           </div>
 
-          <button type="submit" className={styles.entrar}>Entrar</button>
+          <button type="submit" className={styles.entrar} disabled={carregando}>
+            {carregando ? 'Entrando...' : 'Entrar'}
+          </button>
         </form>
 
         <div className={styles.aviso}>

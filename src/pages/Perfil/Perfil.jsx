@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import AppLayout from '../../components/AppLayout';
 import Campo from '../../components/Campo';
 import Botao from '../../components/Botao';
@@ -57,6 +58,8 @@ function ItemLista({ icone, texto, destino, onClick, fim }) {
 }
 
 export default function Perfil() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [usuario, setUsuario] = useState(USUARIO_INICIAL);
   const [agendaConectada, setAgendaConectada] = useState(true);
   const [folha, setFolha] = useState(null); // 'dados' | 'desconectar' | null
@@ -97,6 +100,11 @@ export default function Perfil() {
   const desconectarAgenda = () => {
     setAgendaConectada(false);
     setFolha(null);
+  };
+  
+  const handleSair = () => {
+    logout();
+    navigate('/');
   };
 
   const chevron = <img src={icones.chevronDireita} width={7.4} height={12} alt="" />;
@@ -165,10 +173,10 @@ export default function Perfil() {
       </section>
 
       <section className={styles.sair}>
-        <Link to="/" className={styles.botaoSair}>
+        <button onClick={handleSair} className={styles.botaoSair}>
           <img src={iconeSair} width={18} height={18} alt="" />
           Sair da Conta
-        </Link>
+        </button>
         <p className={styles.versao}>Versão 2.4.1 (Build 108)</p>
       </section>
 

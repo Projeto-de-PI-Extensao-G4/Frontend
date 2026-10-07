@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
 import Campo from '../../components/Campo';
@@ -6,23 +6,17 @@ import Botao from '../../components/Botao';
 import { icones } from '../../components/icones';
 import styles from './RegistrarVenda.module.css';
 
-const CLIENTES = [
-  { id: 1, nome: 'Ana Souza', cpf: '529.982.247-25', telefone: '(11) 91234-5678' },
-  { id: 2, nome: 'Ana Souza', cpf: '111.444.777-35', telefone: '(11) 99988-7766' },
-  { id: 3, nome: 'Mariana Alves Prado', cpf: '390.533.447-05', telefone: '(11) 95544-3322' },
+import { listarClientes, formatarTelefone, formatarCpf } from '../../services/clientes';
+import { cadastrarVenda } from '../../services/vendas';
+import { useVenda } from '../../contexts/VendaContext';
+
+const FORMAS_PAGAMENTO = [
+  { id: 1, nome: 'PIX' },
+  { id: 2, nome: 'Cartão de crédito' }
 ];
 
-const ITENS_INICIAIS = [
-  { id: 1, nome: 'Jogo de Lençol', categoria: 'Roupas', quantidade: 1, preco: 50 },
-  { id: 2, nome: 'Toalha de Banho', categoria: 'Banho', quantidade: 1, preco: 30 },
-];
+const moeda = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-const FORMAS_PAGAMENTO = ['Dinheiro', 'Cartão de crédito', 'Cartão de débito', 'PIX', 'Boleto', 'Cheque'];
-
-const moeda = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-const digitos = (t) => t.replace(/\D/g, '');
-
-// yyyy-MM-dd da data local daqui a um mês (toISOString usaria UTC e poderia voltar um dia).
 function daquiUmMes() {
   const d = new Date();
   d.setMonth(d.getMonth() + 1);
@@ -32,60 +26,163 @@ function daquiUmMes() {
 
 export default function RegistrarVenda() {
   const navigate = useNavigate();
+  const {
+    cliente, setCliente,
+    itens, adicionarItem,
+    formaPagamentoId, setFormaPagamentoId,
+    parcelas, setParcelas,
+    vencimento, setVencimento,
+    limparVenda
+  } = useVenda();
+
   const [busca, setBusca] = useState('');
-  const [cliente, setCliente] = useState(null);
-  const [itens, setItens] = useState(ITENS_INICIAIS);
-  const [forma, setForma] = useState('');
-  const [parcelas, setParcelas] = useState(5);
-  const [vencimento, setVencimento] = useState(daquiUmMes);
+  const [clientes, setClientes] = useState([]);
   const [comprovante, setComprovante] = useState(null);
   const [erroComprovante, setErroComprovante] = useState('');
+  
+  const [salvando, setSalvando] = useState(false);
+  const [erroSalvar, setErroSalvar] = useState('');
 
-  const termo = busca.trim().toLowerCase();
-  const termoDigitos = digitos(busca);
-  const resultados = termo
-    ? CLIENTES.filter(
-        (c) =>
-          c.nome.toLowerCase().includes(termo) ||
-          (termoDigitos && digitos(c.telefone).includes(termoDigitos)),
-      )
-    : [];
+  useEffect(() => {
+    if (!vencimento) setVencimento(daquiUmMes());
+  }, [vencimento, setVencimento]);
+
+  useEffect(() => {
+    if (busca.length < 2) {
+      setClientes([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const data = await listarClientes({ busca, tamanho: 5 });
+        setClientes(data.conteudo || []);
+      } catch (err) {
+        console.error('Erro ao buscar clientes', err);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [busca]);
 
   const total = itens.reduce((soma, i) => soma + i.preco * i.quantidade, 0);
-  const categorias = [...new Set(itens.map((i) => i.categoria))];
+  const categorias = [...new Set(itens.map((i) => i.categoria).filter(Boolean))];
 
   const escolherComprovante = (e) => {
     const arquivo = e.target.files?.[0];
     if (!arquivo) return;
-    const tipos = ['image/png', 'image/jpeg', 'application/pdf'];
-    if (!tipos.includes(arquivo.type) || arquivo.size > 5 * 1024 * 1024) {
-      setErroComprovante('Use PNG, JPG ou PDF de até 5 MB.');
+    if (!['image/png', 'image/jpeg', 'application/pdf'].includes(arquivo.type) || arquivo.size > 5 * 1024 * 1024) {
+      setErroComprovante('Anexe um arquivo PNG, JPG ou PDF de até 5 MB.');
       return;
     }
     setErroComprovante('');
-    setComprovante(arquivo.name);
+    setComprovante(arquivo);
   };
 
-  const confirmar = (e) => {
+  const enviar = async (e) => {
     e.preventDefault();
-    navigate('/vendas/2934');
+    setErroSalvar('');
+
+    if (!cliente) {
+      alert('Selecione um cliente para a venda.');
+      return;
+    }
+    if (itens.length === 0) {
+      alert('Adicione pelo menos um item.');
+      return;
+    }
+    if (!formaPagamentoId) {
+      alert('Selecione a forma de pagamento.');
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      const payload = {
+        clienteId: cliente.id,
+        formaPagamentoId: Number(formaPagamentoId),
+        qtdParcelas: parcelas,
+        itens: itens.map(i => ({ produtoId: i.produtoId, quantidade: i.quantidade })),
+        valorTotalConferencia: total,
+      };
+
+      if (parcelas > 1) {
+        payload.primeiroVencimento = vencimento;
+      }
+      
+      // O comprovante seria upload S3, passamos string vazia por enquanto
+      payload.comprovanteChave = '';
+      
+      // dataVenda nao mandamos, o backend assume o current time
+
+      await cadastrarVenda(payload);
+      
+      limparVenda();
+      navigate('/vendas');
+    } catch (err) {
+      setErroSalvar(err?.response?.data?.mensagem || 'Erro ao registrar venda.');
+    } finally {
+      setSalvando(false);
+    }
   };
 
   return (
-    <AppLayout cabecalho={{ titulo: 'Registrar Venda', esquerda: 'voltar' }}>
-      <form className={styles.formulario} onSubmit={confirmar}>
-        <section className={styles.secao}>
-          <h2 className="rotulo-secao">1. Cliente</h2>
-          {cliente ? (
+    <AppLayout cabecalho={{ titulo: 'Registrar Venda', esquerda: 'voltar' }} semBarra>
+      <form className={styles.form} onSubmit={enviar}>
+        {erroSalvar && <div style={{color: 'red', marginBottom: '15px'}}>{erroSalvar}</div>}
+        
+        <div className={styles.bloco}>
+          <div className={styles.intro}>
+            <h2 className="rotulo-secao">1. Cliente</h2>
+            <Link to="/clientes/novo" className={styles.adicionar}>
+              + Adicionar novo
+            </Link>
+          </div>
+
+          {!cliente ? (
+            <div className={styles.seletorCliente}>
+              <Campo id="venda-cliente" rotulo="Buscar cliente já cadastrado">
+                <input
+                  id="venda-cliente"
+                  className={styles.busca}
+                  placeholder="Nome, CPF ou telefone"
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  autoComplete="off"
+                />
+              </Campo>
+
+              {busca.length > 0 && busca.length < 2 && (
+                <p className={styles.avisoBusca}>Digite pelo menos 2 caracteres...</p>
+              )}
+
+              {busca.length >= 2 && clientes.length > 0 && (
+                <ul className={styles.resultados}>
+                  {clientes.map((c) => (
+                    <li key={c.id}>
+                      <button type="button" className={styles.opcaoCliente} onClick={() => setCliente(c)}>
+                        <span className={styles.opcaoNome}>{c.nomeCompleto}</span>
+                        <span className={styles.opcaoDocs}>
+                          {c.telefonePrincipal ? formatarTelefone(c.telefonePrincipal) : 'Sem telefone'} • {formatarCpf(c.cpf)}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {busca.length >= 2 && clientes.length === 0 && (
+                <p className={styles.avisoBusca}>Nenhum cliente encontrado.</p>
+              )}
+            </div>
+          ) : (
             <div className={styles.clienteEscolhido}>
               <div className={styles.clienteDados}>
-                <p className={styles.clienteNome}>{cliente.nome}</p>
-                <p className="texto-apoio">CPF {cliente.cpf}</p>
-                <p className="texto-apoio">{cliente.telefone}</p>
+                <span className={styles.clienteNome}>{cliente.nomeCompleto}</span>
+                <span className={styles.clienteDocs}>
+                  {cliente.telefonePrincipal ? formatarTelefone(cliente.telefonePrincipal) : 'Sem telefone'} • {formatarCpf(cliente.cpf)}
+                </span>
               </div>
               <button
                 type="button"
-                className={styles.trocar}
+                className={styles.trocarCliente}
                 onClick={() => {
                   setCliente(null);
                   setBusca('');
@@ -94,157 +191,124 @@ export default function RegistrarVenda() {
                 Trocar
               </button>
             </div>
-          ) : (
-            <>
-              <Campo id="venda-cliente">
-                <img src={icones.buscaCampo} width={18} height={24} alt="" />
-                <input
-                  id="venda-cliente"
-                  type="search"
-                  inputMode="search"
-                  autoComplete="off"
-                  placeholder="Buscar por nome ou telefone..."
-                  aria-label="Buscar cliente"
-                  value={busca}
-                  onChange={(e) => setBusca(e.target.value)}
-                />
-              </Campo>
-              {termo ? (
-                <ul className={styles.resultados}>
-                  {resultados.length === 0 && <li className={styles.vazio}>Nenhum cliente encontrado</li>}
-                  {resultados.map((c) => (
-                    <li key={c.id}>
-                      <button type="button" className={styles.resultado} onClick={() => setCliente(c)}>
-                        <span className={styles.clienteNome}>{c.nome}</span>
-                        <span className={styles.clienteApoio}>
-                          CPF {c.cpf} · {c.telefone}
-                        </span>
-                      </button>
-                    </li>
-                  ))}
-                  <li>
-                    <Link to="/clientes/novo" className={styles.cadastrar}>
-                      + Cadastrar novo cliente
-                    </Link>
-                  </li>
-                </ul>
-              ) : (
-                <p className="texto-apoio">
-                  Digite parte do nome ou do telefone. O CPF aparece no resultado para diferenciar nomes iguais.
-                </p>
-              )}
-            </>
           )}
-        </section>
+        </div>
 
-        <section className={styles.secao}>
-          <div className={styles.cabecaSecao}>
+        <div className={styles.bloco}>
+          <div className={styles.intro}>
             <h2 className="rotulo-secao">2. Produtos / Itens</h2>
             <Link to="/vendas/nova/itens" className={styles.adicionar}>
-              <img src={icones.maisPequeno} width={10.5} height={10.5} alt="" />
-              ADICIONAR
+              + Selecionar itens
             </Link>
           </div>
           <ul className={styles.itens}>
             {itens.map((i) => (
-              <li key={i.id} className={styles.item}>
-                <div className={styles.itemTexto}>
-                  <p className={styles.itemNome}>{i.nome}</p>
-                  <p className={styles.itemDetalhe}>
-                    {i.categoria} · {i.quantidade}x
-                  </p>
-                </div>
-                <p className={styles.itemPreco}>{moeda(i.preco * i.quantidade)}</p>
-                <button
-                  type="button"
-                  className={styles.remover}
-                  aria-label={`Remover ${i.nome}`}
-                  onClick={() => setItens((lista) => lista.filter((x) => x.id !== i.id))}
-                >
-                  <img src={icones.lixeira} width={16} height={18} alt="" />
-                </button>
+              <li key={i.produtoId} className={styles.item}>
+                <span className={styles.itemEsquerda}>
+                  <span className={styles.itemNome}>{i.nome}</span>
+                  <span className={styles.itemQtd}>{i.quantidade}x</span>
+                </span>
+                <span className={styles.itemDireita}>
+                  <span className={styles.itemTotal}>{moeda(i.preco * i.quantidade)}</span>
+                  <button
+                    type="button"
+                    className={styles.removerItem}
+                    aria-label={`Remover ${i.nome}`}
+                    onClick={() => adicionarItem({ id: i.produtoId }, 0)} // envia qtd 0 para remover
+                  >
+                    <img src={icones.lixeira} alt="" />
+                  </button>
+                </span>
               </li>
             ))}
             {itens.length === 0 && <li className={styles.vazio}>Nenhum item adicionado.</li>}
           </ul>
-          <div className={styles.total}>
-            <span>Total da Venda</span>
-            <strong>{moeda(total)}</strong>
-          </div>
-          {categorias.length > 0 && (
-            <p className="texto-apoio">
-              Categorias da venda: {categorias.join(', ')} — vêm dos itens adicionados.
-            </p>
+          {itens.length > 0 && categorias.length > 0 && (
+            <div className={styles.categorias}>
+              Categorias da venda: {categorias.join(', ')}
+            </div>
           )}
-        </section>
+        </div>
 
-        <section className={styles.secao}>
-          <h2 className="rotulo-secao">3. Forma de pagamento</h2>
-          <Campo id="venda-forma" seletor>
+        <div className={styles.bloco}>
+          <h2 className="rotulo-secao">3. Pagamento</h2>
+          <Campo id="venda-forma" rotulo="Forma de pagamento" seletor>
             <select
               id="venda-forma"
-              aria-label="Forma de pagamento"
-              value={forma}
-              onChange={(e) => setForma(e.target.value)}
+              value={formaPagamentoId}
+              onChange={(e) => setFormaPagamentoId(e.target.value)}
               required
             >
-              <option value="" disabled>
-                Selecione
-              </option>
+              <option value="" disabled>Selecione...</option>
               {FORMAS_PAGAMENTO.map((f) => (
-                <option key={f} value={f}>
-                  {f}
+                <option key={f.id} value={f.id}>
+                  {f.nome}
                 </option>
               ))}
             </select>
           </Campo>
-        </section>
-
-        <section className={styles.secao}>
-          <h2 className="rotulo-secao">4. Parcelamento</h2>
-          <div className={styles.parcelamento}>
+          <div className={styles.duasColunas}>
             <Campo id="venda-parcelas" rotulo="Parcelas" seletor>
-              <select id="venda-parcelas" value={parcelas} onChange={(e) => setParcelas(Number(e.target.value))}>
-                {Array.from({ length: 12 }, (_, k) => k + 1).map((n) => (
+              <select
+                id="venda-parcelas"
+                value={parcelas}
+                onChange={(e) => setParcelas(Number(e.target.value))}
+                required
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
                   <option key={n} value={n}>
-                    {n}x de {moeda(total / n)}
+                    {n}x
                   </option>
                 ))}
               </select>
             </Campo>
+            
             {parcelas > 1 && (
-              <Campo
-                id="venda-vencimento"
-                rotulo="1º vencimento"
-                type="date"
-                value={vencimento}
-                onChange={(e) => setVencimento(e.target.value)}
-                required
-              />
+              <Campo id="venda-vencimento" rotulo="1º Vencimento">
+                <input
+                  id="venda-vencimento"
+                  type="date"
+                  value={vencimento}
+                  onChange={(e) => setVencimento(e.target.value)}
+                  required
+                />
+              </Campo>
             )}
           </div>
-          <p className="texto-apoio">
-            Vencimentos mensais a partir dessa data. 1x = à vista. A última parcela absorve os centavos.
-          </p>
-        </section>
+          <Campo id="venda-comprovante" rotulo="Comprovante de pagamento" erro={erroComprovante}>
+            <label className={styles.anexo}>
+              <input type="file" accept="image/png,image/jpeg,application/pdf" className="sr-only" onChange={escolherComprovante} />
+              {comprovante ? (
+                <div className={styles.anexado}>
+                  <img src={icones.clipe} width={16} height={16} alt="" />
+                  <span className={styles.anexadoNome}>{comprovante.name}</span>
+                  <button
+                    type="button"
+                    className={styles.removerAnexo}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setComprovante(null);
+                    }}
+                  >
+                    Remover
+                  </button>
+                </div>
+              ) : (
+                <span className={styles.anexoVazio}>Anexar arquivo (Opcional)</span>
+              )}
+            </label>
+          </Campo>
+        </div>
 
-        <section className={styles.secao}>
-          <h2 className="rotulo-secao">5. Comprovante (opcional)</h2>
-          <label className={styles.anexo}>
-            <input
-              type="file"
-              accept="image/png,image/jpeg,application/pdf"
-              className="sr-only"
-              onChange={escolherComprovante}
-            />
-            <img src={icones.clipe} width={14.41} height={24} alt="" />
-            <span className={styles.anexoTitulo}>{comprovante ?? 'Clique para anexar arquivo'}</span>
-            <span className="texto-apoio">PNG, JPG ou PDF (Máx. 5MB)</span>
-          </label>
-          {erroComprovante && <p className={styles.erro}>{erroComprovante}</p>}
-        </section>
-
-        <Botao type="submit">Confirmar venda</Botao>
+        <div className={styles.totalRodape}>
+          <div className={styles.totalEsquerda}>
+            <span className={styles.totalRotulo}>Valor Total</span>
+            <span className={styles.totalValor}>{moeda(total)}</span>
+          </div>
+          <Botao type="submit" disabled={salvando}>
+            {salvando ? 'Salvando...' : 'Finalizar Venda'}
+          </Botao>
+        </div>
       </form>
     </AppLayout>
   );

@@ -7,29 +7,69 @@ import clipe from '../../assets/icons/clipe.svg';
 import salvar from '../../assets/icons/salvar.svg';
 import styles from './ProdutoForm.module.css';
 
-const CATEGORIAS = ['Roupas', 'Mesa', 'Banho', 'Imóveis'];
+import { 
+  buscarProduto, 
+  cadastrarProduto, 
+  atualizarProduto, 
+  listarCategorias 
+} from '../../services/produtos';
 
-const PRODUTO_MOCK = {
-  nome: 'Jogo de Lençol Casal',
-  categoria: 'Roupas',
-  preco: '299,90',
-  descricao: '',
+const formatarPrecoParaInput = (valor) => {
+  if (!valor && valor !== 0) return '';
+  return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+const parsePrecoParaNumero = (str) => {
+  if (!str) return 0;
+  const limpo = str.replace(/[^\d,-]/g, '').replace(',', '.');
+  return parseFloat(limpo) || 0;
 };
 
 export default function ProdutoForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const editando = Boolean(id);
-  const inicial = editando ? PRODUTO_MOCK : { nome: '', categoria: '', preco: '', descricao: '' };
 
-  const [nome, setNome] = useState(inicial.nome);
-  const [categoria, setCategoria] = useState(inicial.categoria);
-  const [preco, setPreco] = useState(inicial.preco);
-  const [descricao, setDescricao] = useState(inicial.descricao);
+  const [nome, setNome] = useState('');
+  const [categoria, setCategoria] = useState('');
+  const [preco, setPreco] = useState('');
+  const [descricao, setDescricao] = useState('');
   const [previa, setPrevia] = useState(null);
   const [erroImagem, setErroImagem] = useState('');
+  
+  const [categoriasLista, setCategoriasLista] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState('');
 
-  useEffect(() => () => previa && URL.revokeObjectURL(previa), [previa]);
+  useEffect(() => {
+    const carregar = async () => {
+      setCarregando(true);
+      try {
+        const cat = await listarCategorias();
+        setCategoriasLista(cat || []);
+
+        if (editando) {
+          const prod = await buscarProduto(id);
+          setNome(prod.nome);
+          setCategoria(prod.categoria?.id || '');
+          setPreco(formatarPrecoParaInput(prod.precoVenda));
+          setDescricao(prod.descricao || '');
+          if (prod.imagemUrl) setPrevia(prod.imagemUrl);
+        }
+      } catch (err) {
+        setErro('Erro ao carregar os dados.');
+      } finally {
+        setCarregando(false);
+      }
+    };
+    
+    carregar();
+  }, [id, editando]);
+
+  useEffect(() => () => {
+    if (previa && previa.startsWith('blob:')) URL.revokeObjectURL(previa);
+  }, [previa]);
 
   const escolherImagem = (e) => {
     const arquivo = e.target.files?.[0];
@@ -42,10 +82,40 @@ export default function ProdutoForm() {
     setPrevia(URL.createObjectURL(arquivo));
   };
 
-  const enviar = (e) => {
+  const enviar = async (e) => {
     e.preventDefault();
-    navigate('/produtos');
+    setErro('');
+    setSalvando(true);
+
+    try {
+      const payload = {
+        nome,
+        categoriaId: Number(categoria),
+        precoVenda: parsePrecoParaNumero(preco),
+        descricao,
+        imagemChave: '' // backend ainda n tem S3
+      };
+
+      if (editando) {
+        await atualizarProduto(id, payload);
+      } else {
+        await cadastrarProduto(payload);
+      }
+      navigate('/produtos');
+    } catch (err) {
+      setErro(err?.response?.data?.mensagem || 'Erro ao salvar o produto.');
+    } finally {
+      setSalvando(false);
+    }
   };
+
+  if (carregando) {
+    return (
+      <AppLayout cabecalho={{ titulo: editando ? 'Editar Produto' : 'Novo Produto', esquerda: 'voltar' }} semBarra>
+        <p className="texto-apoio" style={{padding: '20px'}}>Carregando...</p>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout
@@ -59,6 +129,8 @@ export default function ProdutoForm() {
       </p>
 
       <form className={styles.formulario} onSubmit={enviar}>
+        {erro && <div style={{color: 'red'}}>{erro}</div>}
+        
         <Campo
           id="produto-nome"
           rotulo="Nome do Produto"
@@ -77,13 +149,9 @@ export default function ProdutoForm() {
             onChange={(e) => setCategoria(e.target.value)}
             required
           >
-            <option value="" disabled>
-              Selecione uma categoria
-            </option>
-            {CATEGORIAS.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
+            <option value="" disabled>Selecione...</option>
+            {categoriasLista.map((c) => (
+              <option key={c.id} value={c.id}>{c.nome}</option>
             ))}
           </select>
         </Campo>
@@ -133,11 +201,11 @@ export default function ProdutoForm() {
         </div>
 
         <div className={styles.acoes}>
-          <Botao type="submit">
+          <Botao type="submit" disabled={salvando}>
             <img src={salvar} width={18} height={18} alt="" />
-            Salvar Produto
+            {salvando ? 'Salvando...' : 'Salvar Produto'}
           </Botao>
-          <Botao variante="secundario" onClick={() => navigate('/produtos')}>
+          <Botao variante="secundario" onClick={() => navigate('/produtos')} disabled={salvando}>
             Cancelar
           </Botao>
         </div>

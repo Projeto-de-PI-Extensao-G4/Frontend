@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from "./contexts/AuthContext";
+import { VendaProvider } from "./contexts/VendaContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import Login from './pages/Login/Login';
@@ -21,29 +22,31 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Login />} />
-          
-          <Route element={<ProtectedRoute />}>
-            <Route path="/painel" element={<Painel />} />
-            <Route path="/clientes" element={<Clientes />} />
-            <Route path="/clientes/novo" element={<ClienteForm />} />
-            <Route path="/clientes/:id" element={<ClienteDetalhe />} />
-            <Route path="/clientes/:id/editar" element={<ClienteForm />} />
-            <Route path="/produtos" element={<Produtos />} />
-            <Route path="/produtos/novo" element={<ProdutoForm />} />
-            <Route path="/produtos/:id/editar" element={<ProdutoForm />} />
-            <Route path="/vendas" element={<Vendas />} />
-            <Route path="/vendas/nova" element={<RegistrarVenda />} />
-            <Route path="/vendas/nova/itens" element={<SelecaoItens />} />
-            <Route path="/vendas/:id" element={<VendaDetalhe />} />
-            <Route path="/pagamentos" element={<Extrato />} />
-            <Route path="/perfil" element={<Perfil />} />
-            <Route path="/perfil/senha" element={<AlterarSenha />} />
-          </Route>
+        <VendaProvider>
+          <Routes>
+            <Route path="/" element={<Login />} />
+            
+            <Route element={<ProtectedRoute />}>
+              <Route path="/painel" element={<Painel />} />
+              <Route path="/clientes" element={<Clientes />} />
+              <Route path="/clientes/novo" element={<ClienteForm />} />
+              <Route path="/clientes/:id" element={<ClienteDetalhe />} />
+              <Route path="/clientes/:id/editar" element={<ClienteForm />} />
+              <Route path="/produtos" element={<Produtos />} />
+              <Route path="/produtos/novo" element={<ProdutoForm />} />
+              <Route path="/produtos/:id/editar" element={<ProdutoForm />} />
+              <Route path="/vendas" element={<Vendas />} />
+              <Route path="/vendas/nova" element={<RegistrarVenda />} />
+              <Route path="/vendas/nova/itens" element={<SelecaoItens />} />
+              <Route path="/vendas/:id" element={<VendaDetalhe />} />
+              <Route path="/pagamentos" element={<Extrato />} />
+              <Route path="/perfil" element={<Perfil />} />
+              <Route path="/perfil/senha" element={<AlterarSenha />} />
+            </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </VendaProvider>
       </AuthProvider>
     </BrowserRouter>
   );

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
-import { BotaoBuscaHeader } from '../../components/Header';
+
 import CampoBusca from '../../components/CampoBusca';
 import Campo from '../../components/Campo';
 import Chip, { LinhaChips } from '../../components/Chip';
@@ -164,7 +164,7 @@ export default function Extrato() {
   };
 
   return (
-    <AppLayout cabecalho={{ titulo: 'Extrato', esquerda: 'menu', direita: <BotaoBuscaHeader /> }}>
+    <AppLayout cabecalho={{ titulo: 'Extrato', esquerda: 'menu' }}>
       <div className={styles.filtros}>
         <CampoBusca placeholder="Buscar por cliente..." valor={busca} onChange={setBusca} />
 

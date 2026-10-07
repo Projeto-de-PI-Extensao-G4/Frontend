@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
-import { BotaoBuscaHeader } from '../../components/Header';
+
 import CampoBusca from '../../components/CampoBusca';
 import Cartao from '../../components/Cartao';
 import menos from '../../assets/icons/menos.svg';
@@ -11,26 +11,52 @@ import fone from '../../assets/images/selecao-itens/fone.png';
 import relogioPulseira from '../../assets/images/selecao-itens/relogio-pulseira.png';
 import styles from './SelecaoItens.module.css';
 
-const PRODUTOS = [
-  { id: 1, nome: 'Jogo de Lençol Casal', preco: 299, foto: relogioBranco },
-  { id: 2, nome: 'Toalha de Banho Algodão', preco: 549.9, foto: fone },
-  { id: 3, nome: 'Toalha de Mesa Linho', preco: 189, foto: relogioPulseira },
-];
+import { useVenda } from '../../contexts/VendaContext';
+import { listarProdutos } from '../../services/produtos';
 
-const moeda = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const moeda = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+const getImagem = (nomeOuId) => {
+  const mapeamento = {
+    1: relogioBranco,
+    2: fone,
+    3: relogioPulseira,
+    4: relogioBranco
+  };
+  return mapeamento[nomeOuId] || relogioPulseira;
+};
 
 export default function SelecaoItens() {
+  const { itens, adicionarItem } = useVenda();
   const [busca, setBusca] = useState('');
-  const [quantidades, setQuantidades] = useState({});
+  const [produtos, setProdutos] = useState([]);
+  const [carregando, setCarregando] = useState(true);
 
-  const termo = busca.trim().toLowerCase();
-  const visiveis = PRODUTOS.filter((p) => p.nome.toLowerCase().includes(termo));
+  useEffect(() => {
+    const buscar = async () => {
+      setCarregando(true);
+      try {
+        const data = await listarProdutos({ busca, status: 'ATIVO', tamanho: 100 });
+        setProdutos(data.conteudo || []);
+      } catch (err) {
+        console.error('Erro ao buscar produtos ativos', err);
+      } finally {
+        setCarregando(false);
+      }
+    };
+    
+    const timeout = setTimeout(buscar, 300);
+    return () => clearTimeout(timeout);
+  }, [busca]);
 
-  const alterar = (id, delta) =>
-    setQuantidades((q) => ({ ...q, [id]: Math.max(0, (q[id] ?? 0) + delta) }));
+  const alterar = (produto, delta) => {
+    const itemAtual = itens.find(i => i.produtoId === produto.id);
+    const q = itemAtual ? itemAtual.quantidade : 0;
+    adicionarItem(produto, Math.max(0, q + delta));
+  };
 
-  const totalItens = PRODUTOS.reduce((soma, p) => soma + (quantidades[p.id] ?? 0), 0);
-  const totalValor = PRODUTOS.reduce((soma, p) => soma + (quantidades[p.id] ?? 0) * p.preco, 0);
+  const totalItens = itens.reduce((soma, i) => soma + i.quantidade, 0);
+  const totalValor = itens.reduce((soma, i) => soma + (i.quantidade * i.preco), 0);
 
   const rodape = (
     <div className={styles.rodape}>
@@ -48,31 +74,35 @@ export default function SelecaoItens() {
 
   return (
     <AppLayout
-      cabecalho={{ titulo: 'Selecionar Itens', esquerda: 'voltar', direita: <BotaoBuscaHeader /> }}
+      cabecalho={{ titulo: 'Selecionar Itens', esquerda: 'voltar' }}
       flutuante={rodape}
     >
       <CampoBusca placeholder="Buscar produto por nome..." valor={busca} onChange={setBusca} />
 
+      {carregando && <p className="texto-apoio" style={{marginTop: '15px'}}>Carregando produtos...</p>}
+
       <ul className={styles.lista}>
-        {visiveis.map((p) => {
-          const qtd = quantidades[p.id] ?? 0;
+        {!carregando && produtos.map((p) => {
+          const itemAdicionado = itens.find(i => i.produtoId === p.id);
+          const qtd = itemAdicionado ? itemAdicionado.quantidade : 0;
+          
           return (
             <li key={p.id}>
               <Cartao className={styles.cartao}>
                 <span className={styles.foto}>
-                  <img src={p.foto} alt="" />
+                  <img src={p.imagemUrl || getImagem(p.categoria?.id)} alt="" />
                 </span>
                 <div className={styles.info}>
                   <p className={styles.nome}>{p.nome}</p>
                   <div className={styles.linhaPreco}>
-                    <p className={styles.preco}>{moeda(p.preco)}</p>
+                    <p className={styles.preco}>{moeda(p.precoVenda)}</p>
                     <div className={styles.contador}>
                       <button
                         type="button"
                         className={styles.botaoContador}
                         aria-label={`Diminuir ${p.nome}`}
                         disabled={qtd === 0}
-                        onClick={() => alterar(p.id, -1)}
+                        onClick={() => alterar(p, -1)}
                       >
                         <img src={menos} width={10.5} height={1.5} alt="" />
                       </button>
@@ -83,7 +113,7 @@ export default function SelecaoItens() {
                         type="button"
                         className={styles.botaoContador}
                         aria-label={`Aumentar ${p.nome}`}
-                        onClick={() => alterar(p.id, 1)}
+                        onClick={() => alterar(p, 1)}
                       >
                         <img src={mais} width={10.5} height={10.5} alt="" />
                       </button>
@@ -95,7 +125,7 @@ export default function SelecaoItens() {
           );
         })}
       </ul>
-      {visiveis.length === 0 && <p className="texto-apoio">Nenhum produto encontrado.</p>}
+      {!carregando && produtos.length === 0 && <p className="texto-apoio" style={{marginTop: '15px'}}>Nenhum produto ativo encontrado.</p>}
     </AppLayout>
   );
 }
