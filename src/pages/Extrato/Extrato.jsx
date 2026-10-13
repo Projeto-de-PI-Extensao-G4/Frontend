@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
 
@@ -13,7 +13,9 @@ import iconePix from '../../assets/icons/forma-pix.svg';
 import iconeBoleto from '../../assets/icons/forma-boleto.svg';
 import styles from './Extrato.module.css';
 
-const FORMAS = ['Dinheiro', 'Cartão de crédito', 'Cartão de débito', 'PIX', 'Boleto', 'Cheque'];
+import { listarPagamentos, resumoPagamentos } from '../../services/pagamentos';
+import { listarFormasPagamento } from '../../services/formasPagamento';
+
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 const MESES_EXTENSO = [
   'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
@@ -28,7 +30,6 @@ const ICONE_FORMA = {
 const ICONE_PADRAO = iconesNavegacao.pagamentos;
 
 const dois = (n) => String(n).padStart(2, '0');
-// yyyy-MM-dd da data local (toISOString desloca o dia por causa do fuso).
 const paraIso = (d) => `${d.getFullYear()}-${dois(d.getMonth() + 1)}-${dois(d.getDate())}`;
 const deIso = (iso) => {
   const [a, m, d] = iso.split('-').map(Number);
@@ -38,31 +39,14 @@ const somaDias = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() +
 const paraBr = (iso) => iso.split('-').reverse().join('/');
 const dinheiro = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-// Pagamentos de exemplo: dias contados para trás a partir de hoje.
-const MOCK = [
-  { id: 1, vendaId: 101, cliente: 'João Silva', forma: 'Cartão de crédito', parcela: '2/3', valor: 150, dias: 0 },
-  { id: 2, vendaId: 102, cliente: 'Maria Oliveira', forma: 'PIX', parcela: '1/1', valor: 80, dias: 0 },
-  { id: 3, vendaId: 103, cliente: 'Carlos Santos', forma: 'Boleto', parcela: '1/2', valor: 420.5, dias: 1 },
-  { id: 4, vendaId: 104, cliente: 'Ana Souza', forma: 'Dinheiro', parcela: '1/1', valor: 60, dias: 3 },
-  { id: 5, vendaId: 105, cliente: 'Pedro Lima', forma: 'Cartão de débito', parcela: '1/1', valor: 95, dias: 5 },
-  { id: 6, vendaId: 101, cliente: 'João Silva', forma: 'Cartão de crédito', parcela: '1/3', valor: 150, dias: 6 },
-  { id: 7, vendaId: 106, cliente: 'Luciana Ramos', forma: 'PIX', parcela: '1/2', valor: 210, dias: 9 },
-  { id: 8, vendaId: 107, cliente: 'Marcos Pereira', forma: 'Cheque', parcela: '1/1', valor: 300, dias: 12 },
-  { id: 9, vendaId: 108, cliente: 'Maria Oliveira', forma: 'PIX', parcela: '1/1', valor: 45.5, dias: 15 },
-  { id: 10, vendaId: 109, cliente: 'Carlos Santos', forma: 'Boleto', parcela: '2/2', valor: 120, dias: 18 },
-  { id: 11, vendaId: 110, cliente: 'Fernanda Costa', forma: 'Cartão de crédito', parcela: '3/4', valor: 70, dias: 22 },
-  { id: 12, vendaId: 111, cliente: 'Ana Souza', forma: 'Dinheiro', parcela: '1/1', valor: 35, dias: 26 },
-  { id: 13, vendaId: 112, cliente: 'Pedro Lima', forma: 'PIX', parcela: '1/1', valor: 90, dias: 29 },
-  { id: 14, vendaId: 113, cliente: 'Luciana Ramos', forma: 'PIX', parcela: '2/2', valor: 210, dias: 45 },
-];
-
 function periodoPadrao(hoje) {
   return { de: paraIso(somaDias(hoje, -30)), ate: paraIso(hoje) };
 }
 
 function rotuloDia(iso, hoje) {
+  if (!iso) return 'Data não informada';
   const d = deIso(iso);
-  const diff = Math.round((hoje - d) / DIA_MS);
+  const diff = Math.round((hoje.getTime() - d.getTime()) / DIA_MS);
   const ano = d.getFullYear() !== hoje.getFullYear() ? ` de ${d.getFullYear()}` : '';
   const texto = `${d.getDate()} de ${MESES_EXTENSO[d.getMonth()]}${ano}`;
   if (diff === 0) return `Hoje, ${texto}`;
@@ -78,7 +62,7 @@ function resumoPeriodo(de, ate, qtd) {
   return `${curto(a, !mesmoAno)} – ${curto(b, true)} · ${qtd} ${qtd === 1 ? 'pagamento' : 'pagamentos'}`;
 }
 
-function CampoData({ rotulo, valor, max, onChange }) {
+function CampoData({ rotulo, valor, min, max, onChange }) {
   return (
     <label className={styles.data}>
       <img src={iconeCalendario} width={18} height={18} alt="" />
@@ -90,6 +74,7 @@ function CampoData({ rotulo, valor, max, onChange }) {
         type="date"
         className={styles.dataInput}
         value={valor}
+        min={min}
         max={max}
         aria-label={rotulo === 'DE' ? 'Período de' : 'Período até'}
         onChange={(e) => e.target.value && onChange(e.target.value)}
@@ -106,13 +91,59 @@ export default function Extrato() {
   }, []);
   const hojeIso = paraIso(hoje);
 
+  const [formasPagamento, setFormasPagamento] = useState([]);
+  
   const [periodo, setPeriodo] = useState(() => periodoPadrao(hoje));
   const [busca, setBusca] = useState('');
-  const [forma, setForma] = useState('');
+  const [formaId, setFormaId] = useState('');
   const [valorMin, setValorMin] = useState('');
   const [valorMax, setValorMax] = useState('');
+  
+  const [pagamentos, setPagamentos] = useState([]);
+  const [resumo, setResumo] = useState({ valorTotal: 0, quantidade: 0 });
+  const [carregando, setCarregando] = useState(true);
+  
   const [folha, setFolha] = useState(null); // 'forma' | 'filtros' | null
   const [rascunho, setRascunho] = useState({ min: '', max: '' });
+
+  useEffect(() => {
+    listarFormasPagamento().then(setFormasPagamento).catch(console.error);
+  }, []);
+
+  const carregarTudo = async () => {
+    setCarregando(true);
+    try {
+      const min = valorMin === '' ? null : Number(valorMin.replace(',', '.'));
+      const max = valorMax === '' ? null : Number(valorMax.replace(',', '.'));
+      
+      const params = {
+        inicio: periodo.de,
+        fim: periodo.ate,
+        tamanho: 100 // Extrato simples pega os últimos 100 para o periodo
+      };
+      if (busca.trim()) params.clienteNome = busca.trim();
+      if (formaId) params.formaPagamentoId = formaId;
+      if (min) params.valorMin = min;
+      if (max) params.valorMax = max;
+      
+      const [resLista, resResumo] = await Promise.all([
+        listarPagamentos(params),
+        resumoPagamentos(params)
+      ]);
+      
+      setPagamentos(resLista.conteudo || []);
+      setResumo(resResumo);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(carregarTudo, 300);
+    return () => clearTimeout(timer);
+  }, [busca, periodo.de, periodo.ate, formaId, valorMin, valorMax]);
 
   const mudarData = (lado, iso) => {
     setPeriodo((p) => {
@@ -121,35 +152,26 @@ export default function Extrato() {
     });
   };
 
-  const pagamentos = useMemo(() => {
-    const min = valorMin === '' ? null : Number(valorMin.replace(',', '.'));
-    const max = valorMax === '' ? null : Number(valorMax.replace(',', '.'));
-    const termo = busca.trim().toLowerCase();
-    return MOCK.map((p) => ({ ...p, data: paraIso(somaDias(hoje, -p.dias)) }))
-      .filter((p) => p.data >= periodo.de && p.data <= periodo.ate)
-      .filter((p) => !termo || p.cliente.toLowerCase().includes(termo))
-      .filter((p) => !forma || p.forma === forma)
-      .filter((p) => min === null || Number.isNaN(min) || p.valor >= min)
-      .filter((p) => max === null || Number.isNaN(max) || p.valor <= max)
-      .sort((a, b) => b.data.localeCompare(a.data));
-  }, [hoje, periodo, busca, forma, valorMin, valorMax]);
-
-  const total = pagamentos.reduce((soma, p) => soma + p.valor, 0);
   const grupos = useMemo(() => {
     const porDia = new Map();
-    pagamentos.forEach((p) => porDia.set(p.data, [...(porDia.get(p.data) ?? []), p]));
-    return [...porDia.entries()];
+    pagamentos.forEach((p) => {
+      const diaIso = p.dataPagamento ? p.dataPagamento.split('T')[0] : '';
+      porDia.set(diaIso, [...(porDia.get(diaIso) ?? []), p]);
+    });
+    // sort maps by date descending
+    return [...porDia.entries()].sort((a, b) => b[0].localeCompare(a[0]));
   }, [pagamentos]);
 
-  const comFiltro = Boolean(busca.trim() || forma || valorMin || valorMax);
+  const comFiltro = Boolean(busca.trim() || formaId || valorMin || valorMax);
   const padrao = periodoPadrao(hoje);
   const periodoEhPadrao = periodo.de === padrao.de && periodo.ate === padrao.ate;
 
   const limparFiltros = () => {
     setBusca('');
-    setForma('');
+    setFormaId('');
     setValorMin('');
     setValorMax('');
+    setPeriodo(periodoPadrao(hoje));
   };
 
   const abrirFiltros = () => {
@@ -163,6 +185,8 @@ export default function Extrato() {
     setFolha(null);
   };
 
+  const getNomeForma = (id) => formasPagamento.find(f => f.id === id)?.nome || 'Todas';
+
   return (
     <AppLayout cabecalho={{ titulo: 'Extrato', esquerda: 'menu' }}>
       <div className={styles.filtros}>
@@ -171,28 +195,33 @@ export default function Extrato() {
         <div className={styles.periodo}>
           <p className={styles.periodoRotulo}>PERÍODO{periodoEhPadrao ? ' · últimos 30 dias' : ''}</p>
           <div className={styles.datas}>
-            <CampoData rotulo="DE" valor={periodo.de} max={hojeIso} onChange={(v) => mudarData('de', v)} />
-            <CampoData rotulo="ATÉ" valor={periodo.ate} max={hojeIso} onChange={(v) => mudarData('ate', v)} />
+            <CampoData rotulo="DE" valor={periodo.de} max={periodo.ate} onChange={(v) => mudarData('de', v)} />
+            <CampoData rotulo="ATÉ" valor={periodo.ate} min={periodo.de} max={hojeIso} onChange={(v) => mudarData('ate', v)} />
           </div>
         </div>
 
         <LinhaChips rotulo="Filtros">
-          <Chip ativo={Boolean(forma)} onClick={() => setFolha('forma')}>
-            {forma || 'Forma de pagamento'}
+          <Chip ativo={Boolean(formaId)} onClick={() => setFolha('forma')}>
+            {formaId ? getNomeForma(formaId) : 'Forma de pagamento'}
           </Chip>
           <Chip ativo={Boolean(valorMin || valorMax)} onClick={abrirFiltros}>
             {valorMin || valorMax ? 'Valor filtrado' : 'Mais filtros'}
           </Chip>
+          {(comFiltro || !periodoEhPadrao) && (
+            <Chip onClick={limparFiltros}>Limpar</Chip>
+          )}
         </LinhaChips>
       </div>
 
       <section className={styles.resumo} aria-live="polite">
         <p className={styles.resumoRotulo}>RECEBIDO NO PERÍODO</p>
-        <p className={styles.resumoTotal}>{dinheiro(total)}</p>
-        <p className={styles.resumoPeriodo}>{resumoPeriodo(periodo.de, periodo.ate, pagamentos.length)}</p>
+        <p className={styles.resumoTotal}>{dinheiro(resumo?.valorTotal || 0)}</p>
+        <p className={styles.resumoPeriodo}>{resumoPeriodo(periodo.de, periodo.ate, resumo?.quantidade || 0)}</p>
       </section>
 
-      {pagamentos.length === 0 ? (
+      {carregando && <p className="texto-apoio" style={{padding: 20}}>Carregando extrato...</p>}
+
+      {!carregando && pagamentos.length === 0 ? (
         <section className={styles.vazio}>
           <div className={styles.vazioIcone}>
             <img src={iconeCalendario} width={25} height={25} alt="" />
@@ -215,26 +244,26 @@ export default function Extrato() {
             </Botao>
           )}
         </section>
-      ) : (
+      ) : !carregando && (
         <div className={styles.lista}>
           {grupos.map(([dia, itens]) => (
             <section key={dia} className={styles.grupo}>
               <h2 className={styles.grupoTitulo}>{rotuloDia(dia, hoje)}</h2>
               {itens.map((p) => {
-                const icone = ICONE_FORMA[p.forma] ?? ICONE_PADRAO;
+                const icone = ICONE_FORMA[p.formaPagamentoNome] ?? ICONE_PADRAO;
                 return (
-                  <Link key={p.id} to={`/vendas/${p.vendaId}`} className={styles.linha}>
+                  <Link key={p.parcelamentoId} to={`/vendas/${p.vendaId}`} className={styles.linha}>
                     <span className={styles.linhaIcone}>
                       <img src={icone.src} width={icone.largura} height={icone.altura} alt="" />
                     </span>
                     <span className={styles.linhaInfo}>
-                      <span className={styles.linhaCliente}>{p.cliente}</span>
+                      <span className={styles.linhaCliente}>{p.clienteNome}</span>
                       <span className={styles.linhaDetalhe}>
-                        {p.forma} · Parcela {p.parcela}
+                        {p.formaPagamentoNome} · Parcela {p.numeroParcela}/{p.qtdParcelas}
                       </span>
                     </span>
                     <span className={styles.linhaValor}>
-                      <span className={styles.linhaPreco}>{dinheiro(p.valor)}</span>
+                      <span className={styles.linhaPreco}>{dinheiro(p.valorParcela)}</span>
                       <span className={styles.selo}>PAGO</span>
                     </span>
                   </Link>
@@ -247,19 +276,31 @@ export default function Extrato() {
 
       <FolhaInferior aberta={folha === 'forma'} onFechar={() => setFolha(null)} titulo="Forma de pagamento">
         <div className={styles.opcoes} role="radiogroup" aria-label="Forma de pagamento">
-          {['', ...FORMAS].map((f) => (
+          <button
+            type="button"
+            role="radio"
+            aria-checked={formaId === ''}
+            className={`${styles.opcao} ${formaId === '' ? styles.opcaoAtiva : ''}`}
+            onClick={() => {
+              setFormaId('');
+              setFolha(null);
+            }}
+          >
+            Todas
+          </button>
+          {formasPagamento.map((f) => (
             <button
-              key={f || 'todas'}
+              key={f.id}
               type="button"
               role="radio"
-              aria-checked={forma === f}
-              className={`${styles.opcao} ${forma === f ? styles.opcaoAtiva : ''}`}
+              aria-checked={formaId === f.id}
+              className={`${styles.opcao} ${formaId === f.id ? styles.opcaoAtiva : ''}`}
               onClick={() => {
-                setForma(f);
+                setFormaId(f.id);
                 setFolha(null);
               }}
             >
-              {f || 'Todas'}
+              {f.nome}
             </button>
           ))}
         </div>

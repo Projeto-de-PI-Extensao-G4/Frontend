@@ -1,42 +1,31 @@
-.identidade {
+/* Cabecalho */
+.cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.infosBase {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.infoPessoa {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.linhaIdentidade {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.bloco {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-}
-
-.blocoDireita {
-  align-items: flex-end;
-  text-align: right;
-}
-
-.rotuloMaiusculo {
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 16px;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--cor-texto-secundario);
-}
-
-.destaque {
-  font-size: 20px;
+.clienteNome {
+  font-size: 16px;
   font-weight: 700;
-  line-height: 28px;
+  line-height: 24px;
   color: var(--cor-preto);
+  margin: 0;
   overflow-wrap: anywhere;
 }
 
@@ -44,291 +33,292 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-top: 8px;
   font-size: 12px;
-  line-height: 16px;
   color: var(--cor-texto-secundario);
+  margin: 0;
 }
 
-.cancelamento {
+.infoValor {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 8px;
-  padding-top: 8px;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--cor-texto-secundario);
 }
 
-.estatisticas {
+.valorTotal {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--cor-preto);
+}
+
+.acoesBase {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 
-.estatistica {
+/* Aviso de cancelamento */
+.avisoCancelamento {
+  background: var(--cor-badge-perigo-fundo);
+  color: var(--cor-badge-perigo-texto);
+  padding: 16px;
+  border-radius: var(--raio-cartao);
+  margin-top: 24px;
   display: flex;
   flex-direction: column;
-  gap: 4.5px;
-  padding: 17px;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.avisoCancelamentoTitulo {
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Detalhes e blocos */
+.detalhes {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding-top: 24px;
+}
+
+.blocoTitulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.blocoValor {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--cor-preto);
+}
+
+/* Itens */
+.itens {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
   background: var(--cor-superficie);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-cartao);
 }
 
-.estatisticaRotulo {
-  font-size: 12px;
+.itemNome {
+  font-size: 14px;
   font-weight: 600;
-  line-height: 16px;
-  letter-spacing: 0.6px;
-  color: var(--cor-texto-secundario);
+  color: var(--cor-texto);
 }
 
-.estatisticaValor {
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 28px;
+.itemValor {
+  font-size: 14px;
+  font-weight: 700;
   color: var(--cor-preto);
 }
 
-.saldo {
-  color: var(--cor-perigo);
-}
-
+/* Parcelas */
 .parcelas {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.cabecalhoParcelas {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 12px;
-}
-
-.tituloParcelas {
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
-  color: var(--cor-preto);
-}
-
-.listaParcelas {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 .parcela {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
-  padding: 17px;
+  padding: 16px;
   background: var(--cor-superficie);
   border: 1px solid var(--cor-borda);
   border-radius: var(--raio-cartao);
 }
 
-.parcelaFutura {
-  opacity: 0.75;
+.parcelaPaga {
+  background: #fcfcfc;
 }
 
-.parcelaTopo {
+.parcelaEsquerda {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
+  flex: 1;
 }
 
 .parcelaInfo {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
-.icone {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.parcelaIcone {
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--raio-pilula);
+  width: 24px;
+  height: 24px;
 }
 
-.iconePaga {
-  background: #f0fdf4;
-}
-
-.iconeAberta {
-  background: var(--cor-avatar);
-}
-
-.iconeVencida {
-  background: #ffdad6;
-}
-
-.iconeAguardando {
-  background: var(--cor-trilho);
-}
-
-.parcelaNome {
+.parcelaTitulo {
   font-size: 16px;
   font-weight: 600;
-  line-height: 24px;
+  line-height: 20px;
   color: var(--cor-preto);
-  white-space: nowrap;
 }
 
-.parcelaVencimento {
+.parcelaSub {
   font-size: 12px;
   line-height: 16px;
   color: var(--cor-texto-secundario);
+}
+
+.parcelaDireita {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
 }
 
 .parcelaValor {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  flex-shrink: 0;
-  gap: 2px;
   font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
+  font-weight: 700;
   color: var(--cor-preto);
-  white-space: nowrap;
 }
 
-.registrar {
+.botaoRegistrarPagamento {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  width: 100%;
-  min-height: 44px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 16px;
-  letter-spacing: 0.6px;
-  color: var(--cor-branco);
-  background: var(--cor-preto);
-  border-radius: var(--raio-campo);
-}
-
-.registrarSuave {
-  color: var(--cor-texto-secundario);
-  background: #f3f3f4;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
   border: 1px solid var(--cor-borda);
+  cursor: pointer;
+  padding: 0;
 }
 
-.acoes {
+.botaoRegistrarPagamento:hover:not(:disabled) {
+  background: var(--cor-superficie-suave);
+}
+
+.botaoRegistrarPagamento:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  border-color: transparent;
+}
+
+/* Quitar Saldo */
+.quitar {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.cancelar {
-  width: 100%;
-  min-height: 48px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--cor-perigo);
-  background: var(--cor-superficie);
-  border: 1px solid var(--cor-perigo);
-  border-radius: var(--raio-cartao);
-}
-
-
-
-
-
-
-.formas {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.forma {
-  display: flex;
+  justify-content: space-between;
   align-items: center;
-  width: 100%;
-  min-height: var(--altura-campo);
-  padding: 0 16px;
-  font-size: 16px;
-  text-align: left;
-  color: var(--cor-texto);
+  gap: 16px;
+  padding: 16px;
   background: var(--cor-superficie);
   border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-campo);
+  border-radius: var(--raio-cartao);
+  margin-top: 32px;
+  box-shadow: var(--sombra-flutuante);
 }
 
-.formaAtiva {
-  font-weight: 700;
-  border-color: var(--cor-preto);
-  box-shadow: 0 0 0 1px var(--cor-preto);
-}
-
-.motivo {
+.quitarInfo {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.motivoRotulo {
-  font-size: 14px;
-  color: var(--cor-texto-secundario);
-}
-
-.motivoCampo {
-  width: 100%;
-  padding: 12px 16px;
-  font-size: 16px;
-  color: var(--cor-texto);
-  resize: none;
-  background: var(--cor-superficie);
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-campo);
-  outline: none;
-}
-
-.motivoCampo:focus {
-  border-color: var(--cor-preto);
-  box-shadow: 0 0 0 1px var(--cor-preto);
-}
-
-.motivoErro {
-  border-color: var(--cor-perigo);
-}
-
-.motivoRodape {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.motivoMensagem {
+.quitarRotulo {
   font-size: 12px;
+  font-weight: 600;
+  color: var(--cor-texto-secundario);
+  text-transform: uppercase;
+}
+
+.quitarValor {
+  font-size: 20px;
+  font-weight: 800;
   color: var(--cor-perigo);
 }
 
-.confirmarCancelamento.confirmarCancelamento {
-  background: var(--cor-perigo);
+/* Modais/Folhas Inferiores */
+.botoesFolhaSecundarios {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 24px;
 }
 
-/* Prévia do texto do comprovante, com as quebras de linha do WhatsApp. */
-.previa {
-  margin: 0;
-  padding: 16px;
-  font-family: var(--fonte);
-  font-size: 13px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  color: var(--cor-texto);
-  background: var(--cor-fundo);
+.textareaMotivo {
+  width: 100%;
+  padding: 12px;
   border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+  font-family: var(--fonte);
+  font-size: 14px;
+  resize: none;
+  outline: none;
+  margin-top: 16px;
+}
+
+.textareaMotivo:focus {
+  border-color: var(--cor-preto);
+}
+
+.pix {
+  background: var(--cor-superficie-suave);
+  padding: 16px;
   border-radius: var(--raio-cartao);
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pixTitulo {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cor-texto-secundario);
+  margin: 0;
+}
+
+.pixChave {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--cor-superficie);
+  padding: 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-campo);
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.pixBotaoCopiar {
+  background: none;
+  border: none;
+  color: var(--cor-positivo);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.copiado {
+  color: var(--cor-texto-secundario);
 }

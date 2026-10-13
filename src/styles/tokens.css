@@ -1,29 +1,50 @@
-/* Valores do Figma (arquivo projetopi, frame "wireframe"). */
+/* ========================================================
+   Cris Utilidades — Sistema de Cores e Tokens
+   Padrão: Paleta Viva, Acolhedora e Humana (Terracota, Marfim e Areia)
+   Alternativa: Paleta Clássica Monocromática (data-tema="classico")
+   ======================================================== */
+
 :root {
-  --cor-fundo: #f9f9f9;
-  --cor-superficie: #ffffff;
-  --cor-superficie-suave: #f2f2f2;
-  --cor-avatar: #e3e1ec;
-  --cor-trilho: #eeeeee;
+  /* Fundo da mesa/desktop e fundo interno do app */
+  --cor-fundo-externo: #F2ECE4;
+  --cor-fundo: #FAF7F2;
+  --cor-superficie: #FFFFFF;
+  --cor-superficie-suave: #F3ECE2;
+  --cor-avatar: #FDDCD0;
+  --cor-avatar-texto: #A83822;
+  --cor-trilho: #EFE6DC;
 
-  --cor-texto: #1a1c1c;
-  --cor-texto-secundario: #444748;
-  --cor-texto-apagado: #6b7280;
-  --cor-preto: #000000;
-  --cor-branco: #ffffff;
+  /* Tipografia humanizada (grafite quente / café aveludado) */
+  --cor-texto: #26211E;
+  --cor-texto-secundario: #5E564F;
+  --cor-texto-apagado: #8E847A;
+  --cor-titulo: #26211E;
+  --cor-branco: #FFFFFF;
 
-  --cor-borda: #c4c7c7;
-  --cor-positivo: #16a34a;
-  --cor-perigo: #ba1a1a;
+  /* Identidade Viva & Acolhedora — Terracota Solar */
+  --cor-primaria: #E0583E;
+  --cor-primaria-hover: #C9472E;
+  --cor-primaria-suave: #FDF0EB;
 
-  --cor-badge-positivo-texto: #15803d;
-  --cor-badge-positivo-fundo: #dcfce7;
-  --cor-badge-alerta-texto: #a16207;
-  --cor-badge-alerta-fundo: #fef9c3;
-  --cor-badge-perigo-texto: #93000a;
-  --cor-badge-perigo-fundo: #ffdad6;
-  --cor-badge-neutro-fundo: #e8e8e8;
-  --cor-badge-apagado-fundo: #e2e2e2;
+  /* Mapeado para os botões e elementos de ação originais */
+  --cor-preto: #E0583E;
+
+  /* Linhas e separadores suaves em tom areia */
+  --cor-borda: #E4DCD3;
+  --cor-borda-suave: #ECE5DC;
+
+  /* Indicadores e Badges */
+  --cor-positivo: #15803D;
+  --cor-perigo: #C22B2B;
+
+  --cor-badge-positivo-texto: #166534;
+  --cor-badge-positivo-fundo: #DCFCE7;
+  --cor-badge-alerta-texto: #92400E;
+  --cor-badge-alerta-fundo: #FEF3C7;
+  --cor-badge-perigo-texto: #991B1B;
+  --cor-badge-perigo-fundo: #FEE2E2;
+  --cor-badge-neutro-fundo: #EAE3D9;
+  --cor-badge-apagado-fundo: #E6DFD4;
 
   --fonte: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
@@ -39,6 +60,51 @@
 
   --margem-tela: 20px;
   --largura-app: 480px;
+
+  /* Sombras quentes com brilho acolhedor */
+  --sombra-botao: 0 8px 16px -2px rgba(224, 88, 62, 0.28), 0 3px 6px -2px rgba(224, 88, 62, 0.15);
+  --sombra-flutuante: 0 12px 24px -4px rgba(224, 88, 62, 0.38), 0 4px 8px -2px rgba(0, 0, 0, 0.08);
+  --sombra-folha: 0 -4px 24px rgba(38, 33, 30, 0.12);
+}
+
+/* ========================================================
+   Tema Clássico / Original Figma (Monocromático Industrial)
+   Caso queira voltar exatamente ao visual inicial wireframe.
+   ======================================================== */
+[data-tema="classico"] {
+  --cor-fundo-externo: #e9e9e9;
+  --cor-fundo: #f9f9f9;
+  --cor-superficie: #ffffff;
+  --cor-superficie-suave: #f2f2f2;
+  --cor-avatar: #e3e1ec;
+  --cor-avatar-texto: #1a1c1c;
+  --cor-trilho: #eeeeee;
+
+  --cor-texto: #1a1c1c;
+  --cor-texto-secundario: #444748;
+  --cor-texto-apagado: #6b7280;
+  --cor-titulo: #000000;
+  --cor-branco: #ffffff;
+
+  --cor-primaria: #000000;
+  --cor-primaria-hover: #222222;
+  --cor-primaria-suave: #f2f2f2;
+  --cor-preto: #000000;
+
+  --cor-borda: #c4c7c7;
+  --cor-borda-suave: #d8d8d8;
+
+  --cor-positivo: #16a34a;
+  --cor-perigo: #ba1a1a;
+
+  --cor-badge-positivo-texto: #15803d;
+  --cor-badge-positivo-fundo: #dcfce7;
+  --cor-badge-alerta-texto: #a16207;
+  --cor-badge-alerta-fundo: #fef9c3;
+  --cor-badge-perigo-texto: #93000a;
+  --cor-badge-perigo-fundo: #ffdad6;
+  --cor-badge-neutro-fundo: #e8e8e8;
+  --cor-badge-apagado-fundo: #e2e2e2;
 
   --sombra-botao: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
   --sombra-flutuante: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);

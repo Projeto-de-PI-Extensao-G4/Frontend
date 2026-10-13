@@ -305,7 +305,7 @@ export default function RegistrarVenda() {
             <span className={styles.totalRotulo}>Valor Total</span>
             <span className={styles.totalValor}>{moeda(total)}</span>
           </div>
-          <Botao type="submit" disabled={salvando}>
+          <Botao type="submit" disabled={salvando} larguraTotal={false}>
             {salvando ? 'Salvando...' : 'Finalizar Venda'}
           </Botao>
         </div>

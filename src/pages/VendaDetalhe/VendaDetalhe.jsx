@@ -257,7 +257,7 @@ export default function VendaDetalhe() {
             <span className={styles.quitarRotulo}>Saldo restante</span>
             <strong className={styles.quitarValor}>{moeda(saldo)}</strong>
           </div>
-          <Botao onClick={() => setFolha({ tipo: 'quitar' })}>Quitar Saldo</Botao>
+          <Botao larguraTotal={false} onClick={() => setFolha({ tipo: 'quitar' })}>Quitar Saldo</Botao>
         </div>
       )}
 

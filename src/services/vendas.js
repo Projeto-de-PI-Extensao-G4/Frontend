@@ -1,8 +1,9 @@
 import api from './api';
 
-export async function listarVendas({ busca = '', pagina = 0, tamanho = 20 } = {}) {
+export async function listarVendas({ busca = '', status = '', pagina = 0, tamanho = 20 } = {}) {
   const params = { pagina, tamanho };
   if (busca.trim()) params.busca = busca.trim();
+  if (status) params.status = status;
   const { data } = await api.get('/vendas', { params });
   return data;
 }

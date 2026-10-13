@@ -57,13 +57,7 @@ export default function Vendas() {
       setCarregando(true);
       setErro('');
       try {
-        // Usa o estado local ou query param para filtrar o status na API se for suportado,
-        // mas o backend listarVendas() no Controller nao tem param `status`!
-        // Wait, I saw `@RequestParam(required = false) String busca`
-        // No status filter in the backend!
-        // We will fetch ALL and filter locally for now.
-        
-        const data = await listarVendas({ busca, pagina: 0, tamanho: 100 });
+        const data = await listarVendas({ busca, status, pagina: 0 });
         setVendas(data.conteudo || []);
         setTemMais(!data.ultima);
         setPagina(0);
@@ -76,12 +70,12 @@ export default function Vendas() {
     
     const timeout = setTimeout(carregar, 300);
     return () => clearTimeout(timeout);
-  }, [busca]);
+  }, [busca, status]);
 
   const carregarMais = async () => {
     try {
       const proxima = pagina + 1;
-      const data = await listarVendas({ busca, pagina: proxima, tamanho: 100 });
+      const data = await listarVendas({ busca, status, pagina: proxima });
       setVendas(v => [...v, ...(data.conteudo || [])]);
       setTemMais(!data.ultima);
       setPagina(proxima);
@@ -89,8 +83,6 @@ export default function Vendas() {
       console.error(err);
     }
   };
-
-  const filtradas = status ? vendas.filter(v => v.statusVendaSituacaoSituacao === status) : vendas;
 
   return (
     <AppLayout
@@ -130,15 +122,15 @@ export default function Vendas() {
         <div className={styles.cabecalhoLista}>
           <h2 className={styles.tituloLista}>Lista de Vendas</h2>
           <span className="rotulo-secao">
-            {filtradas.length} {filtradas.length === 1 ? 'resultado' : 'resultados'}
+            {vendas.length} {vendas.length === 1 ? 'resultado' : 'resultados'}
           </span>
         </div>
 
         {carregando && <p className={`texto-apoio ${styles.vazio}`}>Carregando...</p>}
         {!carregando && erro && <p className={`texto-apoio ${styles.vazio}`} style={{color: 'red'}}>{erro}</p>}
-        {!carregando && !erro && filtradas.length === 0 && <p className={`texto-apoio ${styles.vazio}`}>Nenhuma venda encontrada.</p>}
+        {!carregando && !erro && vendas.length === 0 && <p className={`texto-apoio ${styles.vazio}`}>Nenhuma venda encontrada.</p>}
 
-        {!carregando && !erro && filtradas.map((v) => (
+        {!carregando && !erro && vendas.map((v) => (
           <Link key={v.id} to={`/vendas/${v.id}`} className={styles.venda}>
             <div className={styles.vendaTopo}>
               <div className={styles.vendaInfo}>

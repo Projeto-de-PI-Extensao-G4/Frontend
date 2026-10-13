@@ -13,7 +13,7 @@
   height: 96px;
   font-size: 32px;
   font-weight: 700;
-  color: var(--cor-texto);
+  color: var(--cor-avatar-texto, var(--cor-texto));
   background: var(--cor-avatar);
   border: 2px solid var(--cor-borda);
   border-radius: var(--raio-pilula);
@@ -167,3 +167,60 @@ a.item:active {
   flex-direction: column;
   gap: 16px;
 }
+
+.opcoesTema {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 8px 0 20px;
+}
+
+.cartaoTema {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--cor-superficie);
+  border: 2px solid var(--cor-borda);
+  border-radius: var(--raio-cartao);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cartaoTemaAtivo {
+  border-color: var(--cor-primaria);
+  background: var(--cor-primaria-suave, #FDF0EB);
+}
+
+.temaInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.temaTitulo {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.temaDescricao {
+  font-size: 13px;
+  color: var(--cor-texto-secundario);
+}
+
+.amostrasCor {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.amostra {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+

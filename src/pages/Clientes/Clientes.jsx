@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../../components/AppLayout';
-import { BotaoFiltroHeader } from '../../components/Header';
+
 import CampoBusca from '../../components/CampoBusca';
 import BotaoFlutuante from '../../components/BotaoFlutuante';
 import { icones } from '../../components/icones';
@@ -57,7 +57,7 @@ export default function Clientes() {
 
   return (
     <AppLayout
-      cabecalho={{ titulo: 'Clientes', direita: <BotaoFiltroHeader /> }}
+      cabecalho={{ titulo: 'Clientes' }}
       flutuante={<BotaoFlutuante rotulo="Novo cliente" para="/clientes/novo" />}
     >
 

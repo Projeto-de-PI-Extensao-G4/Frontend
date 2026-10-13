@@ -13,6 +13,7 @@ import iconePrivacidade from '../../assets/icons/privacidade.svg';
 import iconeExterno from '../../assets/icons/link-externo.svg';
 import iconeSair from '../../assets/icons/sair.svg';
 import iconeCalendario from '../../assets/icons/calendario-campo.svg';
+import { getTema, aplicarTema } from '../../utils/tema';
 import styles from './Perfil.module.css';
 
 const USUARIO_INICIAL = { nome: 'Cristiano Silva', email: 'cristiano.silva@crisutilidades.com.br' };
@@ -62,7 +63,8 @@ export default function Perfil() {
   const { logout } = useAuth();
   const [usuario, setUsuario] = useState(USUARIO_INICIAL);
   const [agendaConectada, setAgendaConectada] = useState(true);
-  const [folha, setFolha] = useState(null); // 'dados' | 'desconectar' | null
+  const [folha, setFolha] = useState(null); // 'dados' | 'desconectar' | 'aparencia' | null
+  const [temaAtual, setTemaAtual] = useState(getTema());
   const [toast, setToast] = useState(false);
   const [rascunho, setRascunho] = useState(USUARIO_INICIAL);
   const [erros, setErros] = useState({});
@@ -157,6 +159,29 @@ export default function Perfil() {
       </section>
 
       <section className={styles.secao}>
+        <h3 className={styles.titulo}>APARÊNCIA</h3>
+        <div className={styles.lista}>
+          <ItemLista
+            icone={
+              <span className={styles.icone} style={{ fontSize: '16px', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                🎨
+              </span>
+            }
+            texto={
+              <span>
+                Estilo de Cores{' '}
+                <span style={{ display: 'block', fontSize: '12px', fontWeight: 'normal', color: 'var(--cor-texto-secundario)' }}>
+                  {temaAtual === 'classico' ? 'Clássico (Original Figma)' : 'Acolhedor (Viva & Humana)'}
+                </span>
+              </span>
+            }
+            onClick={() => setFolha('aparencia')}
+            fim={chevron}
+          />
+        </div>
+      </section>
+
+      <section className={styles.secao}>
         <h3 className={styles.titulo}>SOBRE</h3>
         <div className={styles.lista}>
           <ItemLista
@@ -218,6 +243,56 @@ export default function Perfil() {
         <Botao onClick={desconectarAgenda}>Desconectar</Botao>
         <Botao variante="secundario" onClick={() => setFolha(null)}>
           Cancelar
+        </Botao>
+      </FolhaInferior>
+
+      <FolhaInferior aberta={folha === 'aparencia'} onFechar={() => setFolha(null)} titulo="Estilo de Cores">
+        <p className="texto-apoio" style={{ marginBottom: '12px' }}>
+          Escolha a paleta visual do sistema:
+        </p>
+        <div className={styles.opcoesTema}>
+          <button
+            type="button"
+            className={`${styles.cartaoTema} ${temaAtual !== 'classico' ? styles.cartaoTemaAtivo : ''}`}
+            onClick={() => {
+              setTemaAtual('acolhedor');
+              aplicarTema('acolhedor');
+              setFolha(null);
+            }}
+          >
+            <div className={styles.temaInfo}>
+              <span className={styles.temaTitulo}>Acolhedor (Viva & Humana)</span>
+              <span className={styles.temaDescricao}>Terracota solar, marfim e areia quente.</span>
+            </div>
+            <div className={styles.amostrasCor}>
+              <span className={styles.amostra} style={{ background: '#E0583E' }} title="Terracota Solar" />
+              <span className={styles.amostra} style={{ background: '#FAF7F2' }} title="Marfim" />
+              <span className={styles.amostra} style={{ background: '#FDDCD0' }} title="Damasco / Pêssego" />
+            </div>
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.cartaoTema} ${temaAtual === 'classico' ? styles.cartaoTemaAtivo : ''}`}
+            onClick={() => {
+              setTemaAtual('classico');
+              aplicarTema('classico');
+              setFolha(null);
+            }}
+          >
+            <div className={styles.temaInfo}>
+              <span className={styles.temaTitulo}>Clássico (Original Figma)</span>
+              <span className={styles.temaDescricao}>Monocromático industrial em preto, cinza e branco.</span>
+            </div>
+            <div className={styles.amostrasCor}>
+              <span className={styles.amostra} style={{ background: '#000000' }} title="Preto" />
+              <span className={styles.amostra} style={{ background: '#F9F9F9' }} title="Cinza Claro" />
+              <span className={styles.amostra} style={{ background: '#C4C7C7' }} title="Borda Metálica" />
+            </div>
+          </button>
+        </div>
+        <Botao variante="secundario" onClick={() => setFolha(null)}>
+          Fechar
         </Botao>
       </FolhaInferior>
     </AppLayout>

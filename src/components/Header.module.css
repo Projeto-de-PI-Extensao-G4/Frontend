@@ -22,7 +22,7 @@
   font-size: 20px;
   font-weight: 700;
   line-height: 28px;
-  color: var(--cor-preto);
+  color: var(--cor-titulo, var(--cor-texto));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
