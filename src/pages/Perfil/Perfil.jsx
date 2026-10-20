@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import AppLayout from '../../components/AppLayout';
 import Campo from '../../components/Campo';
@@ -14,9 +14,35 @@ import iconeExterno from '../../assets/icons/link-externo.svg';
 import iconeSair from '../../assets/icons/sair.svg';
 import iconeCalendario from '../../assets/icons/calendario-campo.svg';
 import { getTema, aplicarTema } from '../../utils/tema';
+import {
+  buscarPerfil,
+  atualizarPerfil,
+  statusAgenda,
+  urlConexaoAgenda,
+  desconectarAgenda as desconectarAgendaApi,
+} from '../../services/perfil';
 import styles from './Perfil.module.css';
 
-const USUARIO_INICIAL = { nome: 'Cristiano Silva', email: 'cristiano.silva@crisutilidades.com.br' };
+// Primeiro desenho com o que o login guardou; o GET /perfil confirma logo depois.
+function usuarioDoLogin() {
+  try {
+    const salvo = JSON.parse(localStorage.getItem('user'));
+    return { nome: salvo?.nomeCompleto ?? '', email: salvo?.email ?? '' };
+  } catch {
+    return { nome: '', email: '' };
+  }
+}
+
+function deResposta(dto) {
+  return { nome: dto.nomeCompleto, email: dto.email };
+}
+
+// Codigos que o backend devolve no ?erro= do callback do Google
+const ERROS_AGENDA = {
+  cancelado: 'Conexão cancelada no Google.',
+  estado_invalido: 'A conexão expirou. Tente de novo.',
+  codigo_invalido: 'O Google recusou a conexão. Tente de novo.',
+};
 
 function iniciais(nome) {
   const partes = nome.trim().split(/\s+/).filter(Boolean);
@@ -61,17 +87,39 @@ function ItemLista({ icone, texto, destino, onClick, fim }) {
 export default function Perfil() {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  const [usuario, setUsuario] = useState(USUARIO_INICIAL);
-  const [agendaConectada, setAgendaConectada] = useState(true);
+  const [parametros, setParametros] = useSearchParams();
+  const [usuario, setUsuario] = useState(usuarioDoLogin);
+  // null enquanto carrega; disponivel=false quando o backend roda sem Google Agenda
+  const [agenda, setAgenda] = useState(null);
+  const [conectando, setConectando] = useState(false);
   const [folha, setFolha] = useState(null); // 'dados' | 'desconectar' | 'aparencia' | null
   const [temaAtual, setTemaAtual] = useState(getTema());
-  const [toast, setToast] = useState(false);
-  const [rascunho, setRascunho] = useState(USUARIO_INICIAL);
+  const [toast, setToast] = useState('');
+  const [rascunho, setRascunho] = useState(usuario);
   const [erros, setErros] = useState({});
+  const [salvando, setSalvando] = useState(false);
+
+  useEffect(() => {
+    buscarPerfil()
+      .then((dto) => setUsuario(deResposta(dto)))
+      .catch(() => setToast('Não foi possível carregar seus dados.'));
+    statusAgenda()
+      .then(setAgenda)
+      .catch(() => setAgenda({ disponivel: false, conectado: false }));
+  }, []);
+
+  // Volta do Google: o backend redireciona para /perfil?status=conectado ou ?erro=...
+  useEffect(() => {
+    const status = parametros.get('status');
+    const erro = parametros.get('erro');
+    if (!status && !erro) return;
+    setToast(status === 'conectado' ? 'Google Agenda conectado ✓' : ERROS_AGENDA[erro] || 'Não foi possível conectar o Google Agenda.');
+    setParametros({}, { replace: true });
+  }, [parametros, setParametros]);
 
   useEffect(() => {
     if (!toast) return undefined;
-    const timer = setTimeout(() => setToast(false), 3000);
+    const timer = setTimeout(() => setToast(''), 3000);
     return () => clearTimeout(timer);
   }, [toast]);
 
@@ -81,7 +129,7 @@ export default function Perfil() {
     setFolha('dados');
   };
 
-  const salvarDados = (e) => {
+  const salvarDados = async (e) => {
     e.preventDefault();
     const nome = rascunho.nome.trim();
     const email = rascunho.email.trim();
@@ -90,19 +138,45 @@ export default function Perfil() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) novosErros.email = 'Informe um e-mail válido.';
     setErros(novosErros);
     if (Object.keys(novosErros).length > 0) return;
-    setUsuario({ nome, email });
-    setFolha(null);
+    setSalvando(true);
+    try {
+      const dto = await atualizarPerfil({ nomeCompleto: nome, email });
+      setUsuario(deResposta(dto));
+      const salvo = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...salvo, nomeCompleto: dto.nomeCompleto, email: dto.email }));
+      setFolha(null);
+    } catch (err) {
+      setErros({ email: err?.response?.data?.mensagem || 'Não foi possível salvar.' });
+    } finally {
+      setSalvando(false);
+    }
   };
 
-  const conectarAgenda = () => {
-    setAgendaConectada(true);
-    setToast(true);
+  // Sai do app para a tela de consentimento do Google: e la que a pessoa
+  // escolhe a conta. O backend devolve o navegador para /perfil no fim.
+  const conectarAgenda = async () => {
+    setConectando(true);
+    try {
+      window.location.assign(await urlConexaoAgenda());
+    } catch {
+      setToast('Não foi possível iniciar a conexão com o Google.');
+      setConectando(false);
+    }
   };
 
-  const desconectarAgenda = () => {
-    setAgendaConectada(false);
-    setFolha(null);
+  const desconectarAgenda = async () => {
+    try {
+      await desconectarAgendaApi();
+      setAgenda((a) => ({ ...a, conectado: false }));
+    } catch {
+      setToast('Não foi possível desconectar o Google Agenda.');
+    } finally {
+      setFolha(null);
+    }
   };
+
+  const agendaConectada = Boolean(agenda?.conectado);
+  const apoioAgenda = !agenda ? 'Verificando…' : !agenda.disponivel ? 'Indisponível neste ambiente' : agendaConectada ? 'Conectado' : null;
   
   const handleSair = () => {
     logout();
@@ -116,7 +190,7 @@ export default function Perfil() {
     <AppLayout cabecalho={{ titulo: 'Cris Utilidades', esquerda: null }}>
       <section className={styles.cabecalho}>
         <div className={styles.avatar} aria-hidden="true">
-          {iniciais(usuario.nome)}
+          {iniciais(usuario.nome || '?')}
         </div>
         <div className={styles.identidade}>
           <h2 className={styles.nome}>{usuario.nome}</h2>
@@ -144,16 +218,19 @@ export default function Perfil() {
               <Icone src={iconeCalendario} largura={16} altura={16} />
               <span>
                 <span className={styles.itemTexto}>Google Agenda</span>
-                {agendaConectada && <span className={styles.itemApoio}>Conectado</span>}
+                {apoioAgenda && <span className={styles.itemApoio}>{apoioAgenda}</span>}
               </span>
             </span>
-            <Botao
-              variante="texto"
-              larguraTotal={false}
-              onClick={agendaConectada ? () => setFolha('desconectar') : conectarAgenda}
-            >
-              {agendaConectada ? 'Desconectar' : 'Conectar'}
-            </Botao>
+            {agenda?.disponivel && (
+              <Botao
+                variante="texto"
+                larguraTotal={false}
+                disabled={conectando}
+                onClick={agendaConectada ? () => setFolha('desconectar') : conectarAgenda}
+              >
+                {agendaConectada ? 'Desconectar' : conectando ? 'Abrindo…' : 'Conectar'}
+              </Botao>
+            )}
           </div>
         </div>
       </section>
@@ -207,7 +284,7 @@ export default function Perfil() {
 
       {toast && (
         <div className={styles.toast} role="status">
-          Google Agenda conectado ✓
+          {toast}
         </div>
       )}
 
@@ -231,7 +308,7 @@ export default function Perfil() {
             erro={erros.email}
             onChange={(e) => setRascunho((r) => ({ ...r, email: e.target.value }))}
           />
-          <Botao type="submit">Salvar</Botao>
+          <Botao type="submit" disabled={salvando}>{salvando ? 'Salvando…' : 'Salvar'}</Botao>
           <Botao variante="secundario" onClick={() => setFolha(null)}>
             Cancelar
           </Botao>
