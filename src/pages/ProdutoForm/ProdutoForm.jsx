@@ -13,6 +13,7 @@ import {
   atualizarProduto, 
   listarCategorias 
 } from '../../services/produtos';
+import { enviarArquivo, chaveDaUrl } from '../../services/arquivos';
 
 const formatarPrecoParaInput = (valor) => {
   if (!valor && valor !== 0) return '';
@@ -35,6 +36,8 @@ export default function ProdutoForm() {
   const [preco, setPreco] = useState('');
   const [descricao, setDescricao] = useState('');
   const [previa, setPrevia] = useState(null);
+  const [arquivoNovo, setArquivoNovo] = useState(null);
+  const [chaveAtual, setChaveAtual] = useState(null);
   const [erroImagem, setErroImagem] = useState('');
   
   const [categoriasLista, setCategoriasLista] = useState([]);
@@ -55,7 +58,10 @@ export default function ProdutoForm() {
           setCategoria(prod.categoria?.id || '');
           setPreco(formatarPrecoParaInput(prod.precoVenda));
           setDescricao(prod.descricao || '');
-          if (prod.imagemUrl) setPrevia(prod.imagemUrl);
+          if (prod.imagemUrl) {
+            setPrevia(prod.imagemUrl);
+            setChaveAtual(chaveDaUrl(prod.imagemUrl));
+          }
         }
       } catch (err) {
         setErro('Erro ao carregar os dados.');
@@ -79,6 +85,7 @@ export default function ProdutoForm() {
       return;
     }
     setErroImagem('');
+    setArquivoNovo(arquivo);
     setPrevia(URL.createObjectURL(arquivo));
   };
 
@@ -88,12 +95,18 @@ export default function ProdutoForm() {
     setSalvando(true);
 
     try {
+      // Imagem nova sobe antes, por POST /arquivos; o produto so guarda a chave.
+      // Sem imagem nova, a edicao reenvia a chave que ja existia.
+      const imagemChave = arquivoNovo
+        ? await enviarArquivo(arquivoNovo, 'produtos')
+        : chaveAtual;
+
       const payload = {
         nome,
         categoriaId: Number(categoria),
         precoVenda: parsePrecoParaNumero(preco),
         descricao,
-        imagemChave: '' // backend ainda n tem S3
+        imagemChave
       };
 
       if (editando) {
